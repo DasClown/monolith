@@ -209,7 +209,7 @@ All bosses expose weak points, gain phases at 66% and 33% health, and become fas
 
 - Optional Supabase login with email magic link or Google.
 - Cloud save, profile name/tag, and entitlement sync.
-- `PaddleIapAdapter` opens Paddle Checkout only when Supabase and Paddle are configured.
+- `PaddleIapAdapter` opens Paddle Checkout for the €2.99 Supporter Pack only when Supabase and Paddle are configured.
 - A signed Supabase Edge Function webhook grants permanent entitlements server-side.
 - Production without configuration shows `VAULT CLOSED`; it never grants free purchases.
 - Development uses `MockIapAdapter` for local testing.

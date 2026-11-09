@@ -157,11 +157,7 @@ export class MonetizationSystem {
       if (!this.isLive) return true;
       // Consumable balances live in the client save today. Until a server
       // wallet exists they are intentionally not offered for real money.
-      return (
-        product.id !== 'starter_pack' &&
-        product.id !== 'gem_hoard' &&
-        product.id !== 'ad_free'
-      );
+      return product.id === 'supporter_pack';
     });
   }
 

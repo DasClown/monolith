@@ -31,9 +31,7 @@ supporter purchases.
    ```bash
    supabase secrets set \
      PADDLE_WEBHOOK_SECRET=... \
-     PADDLE_PRICE_SUPPORTER=pri_... \
-     PADDLE_PRICE_COIN_DOUBLER=pri_... \
-     PADDLE_PRICE_BATTLE_PASS=pri_...
+     PADDLE_PRICE_SUPPORTER=pri_...
    ```
 
 The tables use Row Level Security. Players can read and write only their own save
@@ -43,10 +41,8 @@ uses the service-role key to write entitlements.
 ## 2. Paddle
 
 1. Create a Paddle account and a sandbox first.
-2. Create prices for:
-   - Supporter Pack
-   - Coin Doubler
-   - Neon Pass
+2. Create one price for the Supporter Pack. The live store intentionally offers
+   only the cosmetic Supporter Pack; other catalog entries stay development-only.
 3. Add the client token and price IDs to `.env.local`:
    - `VITE_PADDLE_CLIENT_TOKEN`
    - `VITE_PADDLE_ENV=sandbox`
@@ -72,8 +68,6 @@ Add these repository secrets:
 - `VITE_PADDLE_CLIENT_TOKEN`
 - `VITE_PADDLE_ENV`
 - `VITE_PADDLE_PRICE_SUPPORTER`
-- `VITE_PADDLE_PRICE_COIN_DOUBLER`
-- `VITE_PADDLE_PRICE_BATTLE_PASS`
 
 The Pages workflow passes them into `npm run build:pages`.
 
