@@ -8,9 +8,6 @@ const ENVIRONMENT = import.meta.env.VITE_PADDLE_ENV === 'production' ? 'producti
 
 const PRICE_IDS: Record<string, string | undefined> = {
   supporter_pack: import.meta.env.VITE_PADDLE_PRICE_SUPPORTER?.trim(),
-  coin_doubler: import.meta.env.VITE_PADDLE_PRICE_COIN_DOUBLER?.trim(),
-  battle_pass: import.meta.env.VITE_PADDLE_PRICE_BATTLE_PASS?.trim(),
-  ad_free: import.meta.env.VITE_PADDLE_PRICE_AD_FREE?.trim(),
 };
 
 export function isPaddleConfigured(): boolean {
