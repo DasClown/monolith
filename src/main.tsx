@@ -2,6 +2,7 @@ import '@fontsource/lilita-one/400.css';
 import '@fontsource-variable/nunito';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { bootstrapCloud } from './services/cloud';
 import { getGameSession } from './game/session';
 import './styles.css';
 
@@ -13,6 +14,7 @@ const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element.');
 
 createRoot(root).render(<App />);
+bootstrapCloud();
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

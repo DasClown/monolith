@@ -28,6 +28,15 @@ function redirectUrl(): string {
   return `${window.location.origin}${import.meta.env.BASE_URL}`;
 }
 
+/**
+ * Create the Supabase client at app startup. This is important for magic-link
+ * redirects: detectSessionInUrl only runs once the client exists.
+ */
+export function bootstrapCloud(): void {
+  if (!isCloudConfigured) return;
+  void getCloudSession().catch(() => undefined);
+}
+
 export async function getCloudSession(): Promise<Session | null> {
   const supabase = getClient();
   if (!supabase) return null;

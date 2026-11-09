@@ -208,6 +208,7 @@ All bosses expose weak points, gain phases at 66% and 33% health, and become fas
 ### Accounts and monetization
 
 - Optional Supabase login with email magic link or Google.
+- After the first login the Supabase session is persisted and refreshed automatically; the magic link is only needed initially, after sign-out, or after clearing site data.
 - Cloud save, profile name/tag, and entitlement sync.
 - `PaddleIapAdapter` opens Paddle Checkout for the €2.99 Supporter Pack only when Supabase and Paddle are configured.
 - A signed Supabase Edge Function webhook grants permanent entitlements server-side.

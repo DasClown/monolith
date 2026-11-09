@@ -25,11 +25,24 @@ export function CloudAccountPanel() {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(isCloudConfigured);
 
   useEffect(() => {
     if (!isCloudConfigured) return undefined;
-    void getCloudSession().then(setSession);
-    return onCloudAuthChange(setSession);
+    let mounted = true;
+    void getCloudSession().then((next) => {
+      if (!mounted) return;
+      setSession(next);
+      setCheckingSession(false);
+    });
+    const unsubscribe = onCloudAuthChange((next) => {
+      setSession(next);
+      setCheckingSession(false);
+    });
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -102,7 +115,9 @@ export function CloudAccountPanel() {
           <span className={`cloud-dot ${session ? 'is-on' : ''}`} />
         </div>
 
-        {session ? (
+        {checkingSession ? (
+          <p className="cloud-note">RESTORING SESSION…</p>
+        ) : session ? (
           <>
             <span className="cloud-email">{session.user.email ?? session.user.id.slice(0, 8)}</span>
             <div className="cloud-actions">
