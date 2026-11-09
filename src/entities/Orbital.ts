@@ -1,5 +1,13 @@
 import { TAU } from '../core/math';
 
+/**
+ * Place orbital index/count relative to the current first orbital. This keeps
+ * a second blade exactly opposite the first one and spaces a third evenly.
+ */
+export function relativeOrbitalAngle(baseAngle: number, index: number, count: number): number {
+  return (baseAngle + (index / Math.max(1, count)) * TAU) % TAU;
+}
+
 export class Orbital {
   readonly id: number;
   angle: number;
@@ -30,6 +38,13 @@ export class Orbital {
     this.damage = damage;
     this.spinSpeed = spinSpeed;
     this.size = size;
+  }
+
+  setAngle(angle: number): void {
+    this.angle = angle % TAU;
+    this.updatePosition(0);
+    this.prevX = this.x;
+    this.prevY = this.y;
   }
 
   update(dt: number): void {

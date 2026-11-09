@@ -6,6 +6,7 @@ import { DisabledIapAdapter, MonetizationSystem } from '../src/systems/Monetizat
 import { PrestigeSystem } from '../src/systems/PrestigeSystem';
 import { WaveSystem } from '../src/systems/WaveSystem';
 import { Enemy } from '../src/entities/Enemy';
+import { relativeOrbitalAngle } from '../src/entities/Orbital';
 import type { EnemyKind, EnemySpawnSpec } from '../src/core/types';
 import { todayKey } from '../src/utils/daily';
 import { RNG } from '../src/core/rng';
@@ -266,5 +267,19 @@ describe('orbital execution', () => {
     expect(enemy.dead).toBe(true);
     expect(enemy.hp).toBe(0);
     expect(enemy.shield).toBe(0);
+  });
+});
+
+
+describe('orbital spacing', () => {
+  it('places the second blade exactly opposite the current first blade', () => {
+    const firstAngle = 1.234;
+    const secondAngle = relativeOrbitalAngle(firstAngle, 1, 2);
+    expect(Math.abs(secondAngle - ((firstAngle + Math.PI) % (Math.PI * 2)))).toBeLessThan(1e-9);
+  });
+
+  it('spaces three blades evenly from the current first blade', () => {
+    const thirdAngle = relativeOrbitalAngle(0.5, 2, 3);
+    expect(thirdAngle).toBeCloseTo(0.5 + (Math.PI * 4) / 3, 9);
   });
 });

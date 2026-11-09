@@ -11,7 +11,7 @@ import type {
 } from '../core/types';
 import { Enemy } from '../entities/Enemy';
 import { ENEMY_ARCHETYPES } from '../entities/EnemyArchetypes';
-import { Orbital } from '../entities/Orbital';
+import { Orbital, relativeOrbitalAngle } from '../entities/Orbital';
 import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { useGameStore } from '../store/gameStore';
@@ -864,9 +864,12 @@ export class GameSession {
       );
     }
     const radius = 82 + desired * 4;
-    for (const orbital of this.orbitals) {
+    const count = this.orbitals.length;
+    const baseAngle = this.orbitals[0]?.angle ?? 0;
+    this.orbitals.forEach((orbital, index) => {
       orbital.applyStats(radius, stats.orbDamage, stats.orbSpeed, stats.orbRadius);
-    }
+      orbital.setAngle(relativeOrbitalAngle(baseAngle, index, count));
+    });
   }
 
   private getStartingCash(): number {
