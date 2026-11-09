@@ -86,7 +86,10 @@ export class Enemy {
     this.attackInterval = ATTACK_INTERVAL[spec.kind];
     this.spawnAngle = spec.spawnAngle;
     this.mutators = spec.mutators;
-    this.regenPerSecond = spec.regen;
+    // Bosses cannot out-heal a long fight indefinitely. Mutator regen is capped.
+    this.regenPerSecond = this.boss
+      ? Math.min(spec.regen, this.maxHealth * 0.0015)
+      : spec.regen;
     this.attackCooldown = 0.3;
     this.wobblePhase = (id * 2.399963) % (Math.PI * 2);
     this.x = Math.cos(spec.spawnAngle) * spec.spawnRadius;
@@ -276,7 +279,9 @@ export class Enemy {
 
   applySlow(factor: number, duration: number): void {
     if (factor <= 0) return;
-    this.slowFactor = Math.max(this.slowFactor, factor);
+    // Bosses resist hard control so they can always reach the core eventually.
+    const applied = this.boss ? Math.min(0.4, factor * 0.55) : factor;
+    this.slowFactor = Math.max(this.slowFactor, applied);
     this.slowRemaining = Math.max(this.slowRemaining, duration);
   }
 

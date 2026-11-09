@@ -120,7 +120,7 @@ export const UPGRADE_DEFS: ReadonlyArray<UpgradeDef> = [
   {
     id: 'slow',
     name: 'Stasis Field',
-    description: 'Bolts chill targets, reducing movement speed.',
+    description: 'Bolts chill targets. Bosses resist most of the slow.',
     icon: 'slow',
     tab: 'fusion',
     currency: 'cash',

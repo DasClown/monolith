@@ -82,6 +82,8 @@ export class GameSession {
   private overdriveRemaining = 0;
   private runKills = 0;
   private waitingForStart = true;
+  private bossFightElapsed = 0;
+  private bossOverloadTier = 0;
   private cosmeticId: CosmeticId = DEFAULT_COSMETIC;
   private ownedCosmetics = new Set<CosmeticId>([DEFAULT_COSMETIC]);
 
@@ -256,6 +258,7 @@ export class GameSession {
     }
     this.enemies = this.enemies.filter((enemy) => !enemy.dead);
     this.processBossEvents();
+    this.updateBossOverload(dt);
 
     // 2. The tower aims, regenerates, and fires.
     const fire = this.tower.update(dt, this.enemies, () =>
@@ -406,6 +409,34 @@ export class GameSession {
     }
   };
 
+  private updateBossOverload(dt: number): void {
+    const bossAlive = this.enemies.some((enemy) => enemy.boss && !enemy.dead);
+    if (!bossAlive) {
+      if (this.bossOverloadTier > 0) {
+        this.bossOverloadTier = 0;
+        this.bossFightElapsed = 0;
+        this.tower.applyStats(this.getTowerStats());
+      } else {
+        this.bossFightElapsed = 0;
+      }
+      return;
+    }
+
+    this.bossFightElapsed += dt;
+    const tier =
+      this.bossFightElapsed < 25
+        ? 0
+        : Math.min(6, 1 + Math.floor((this.bossFightElapsed - 25) / 10));
+    if (tier === this.bossOverloadTier) return;
+    this.bossOverloadTier = tier;
+    this.tower.applyStats(this.getTowerStats());
+    if (tier > 0) {
+      useGameStore
+        .getState()
+        .pushToast(`MONOLITH OVERLOAD · +${tier * 25}% DAMAGE`, 'gold');
+    }
+  }
+
   private applyElementalOnHit(enemy: Enemy, allowChain: boolean): void {
     const stats = this.tower.stats;
     if (!enemy.dead) {
@@ -488,6 +519,8 @@ export class GameSession {
   }
 
   private onWaveStarted(info: WaveStartInfo): void {
+    this.bossFightElapsed = 0;
+    this.bossOverloadTier = 0;
     this.waveKilled = 0;
     this.visualEvents.push({ type: 'waveStart', wave: info.wave });
     useGameStore.getState().showBanner(
@@ -541,6 +574,8 @@ export class GameSession {
     this.upgrades.resetRun();
     this.banners.reset();
     this.economy.resetRun(this.getStartingCash());
+    this.bossFightElapsed = 0;
+    this.bossOverloadTier = 0;
     this.tower = new Tower(this.getTowerStats());
     this.tower.setTargetMode(this.targetMode);
     this.enemies = [];
@@ -603,6 +638,8 @@ export class GameSession {
     this.daily.recordRun(this.waves.wave, this.runKills, this.getPlayerLabel());
     this.runKills = 0;
     this.waitingForStart = true;
+    this.bossFightElapsed = 0;
+    this.bossOverloadTier = 0;
     this.overdriveRemaining = 0;
     this.abilities.resetCooldowns();
     this.enemies = [];
@@ -889,15 +926,17 @@ export class GameSession {
       0.15,
       this.upgrades.getWorkshopRank() * TOWER_BALANCE.workshop.rankArmor,
     );
+    const overload = 1 + this.bossOverloadTier * 0.25;
     const boosted = {
       ...stats,
-      damage: stats.damage * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1),
+      damage:
+        stats.damage * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1) * overload,
       fireRate: stats.fireRate * (1 + tree.fireRate) * (overdrive ? 1.6 : 1),
       critChance: Math.min(0.9, stats.critChance + tree.crit),
       maxHp: stats.maxHp * (1 + tree.maxHp),
       armor: Math.min(0.8, stats.armor + tree.armor + rankArmor),
       regen: stats.regen + tree.regen,
-      orbDamage: stats.orbDamage * ascension * (1 + tree.damage),
+      orbDamage: stats.orbDamage * ascension * (1 + tree.damage) * overload,
       burnDps: stats.burnDps * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1),
     };
     return this.banners.applyToStats(boosted);

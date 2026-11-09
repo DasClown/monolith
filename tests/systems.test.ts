@@ -283,3 +283,20 @@ describe('orbital spacing', () => {
     expect(thirdAngle).toBeCloseTo(0.5 + (Math.PI * 4) / 3, 9);
   });
 });
+
+
+describe('boss anti-stall', () => {
+  it('caps boss slow and regeneration so a fight cannot freeze forever', () => {
+    const boss = new Enemy(spec('crusher', { maxHealth: 10000, regen: 500 }));
+    boss.applySlow(0.65, 5);
+    expect(boss.slowFactor).toBeLessThanOrEqual(0.4);
+    expect(boss.regenPerSecond).toBeLessThanOrEqual(15);
+  });
+
+  it('does not cap normal enemy slow or regeneration', () => {
+    const normal = new Enemy(spec('brute', { maxHealth: 1000, regen: 50 }));
+    normal.applySlow(0.65, 5);
+    expect(normal.slowFactor).toBeCloseTo(0.65);
+    expect(normal.regenPerSecond).toBe(50);
+  });
+});
