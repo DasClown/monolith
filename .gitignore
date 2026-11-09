@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-ssr
+.check
+*.local
+.DS_Store
+npm-debug.log*
+deepseek-costs/

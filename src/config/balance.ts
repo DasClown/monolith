@@ -1,0 +1,107 @@
+/**
+ * One place for the numbers that define the defense curve.
+ * Tweak these values to rebalance the monolith without hunting through systems.
+ */
+export const TOWER_BALANCE = {
+  base: {
+    damage: 9,
+    fireRate: 2.7,
+    range: 320,
+    critChance: 0.05,
+    critMultiplier: 2.2,
+    projectiles: 1,
+    maxHp: 160,
+    regen: 0.25,
+    armor: 0,
+    orbDamage: 14,
+    orbSpeed: 1.35,
+    orbRadius: 9,
+    projectileSpeed: 620,
+  },
+  run: {
+    damageMultiplier: 1.32,
+    fireRateMultiplier: 1.085,
+    rangeMultiplier: 1.055,
+    critPerLevel: 0.04,
+    critCap: 0.75,
+    hpPerLevel: 24,
+    regenPerLevel: 0.45,
+    armorPerLevel: 0.04,
+    armorCap: 0.6,
+    orbDamageMultiplier: 1.45,
+    orbSpeedMultiplier: 1.12,
+  },
+  workshop: {
+    trainingDamage: 0.06,
+    hpPerBlueprint: 10,
+    rankDamage: 0.05,
+    rankCoin: 0.05,
+    startingCash: 36,
+    startingCashPerLevel: 30,
+    coinPerMagnetLevel: 0.08,
+  },
+  nova: {
+    cooldown: 24,
+    damageMultiplier: 16,
+    flatDamage: 60,
+    radius: 330,
+  },
+  status: {
+    burnDpsBase: 0.15,
+    burnDpsPerLevel: 0.035,
+    burnDuration: 2.5,
+    slowBase: 0.12,
+    slowPerLevel: 0.035,
+    slowCap: 0.65,
+    slowDuration: 2.2,
+    chainDamageBase: 0.3,
+    chainDamagePerLevel: 0.035,
+    chainRangeBase: 90,
+    chainRangePerLevel: 4,
+    thermalBonus: 0.18,
+    triadNovaBonus: 0.25,
+  },
+} as const;
+
+export const WAVE_BALANCE = {
+  firstWaveDelay: 3.2,
+  intermission: 4.5,
+  baseCount: 6,
+  countPerWave: 1.8,
+  healthGrowth: 1.26,
+  damageGrowth: 1.14,
+  speedGrowth: 0.018,
+  speedCap: 0.55,
+  rewardGrowth: 0.08,
+  tierEvery: 7,
+  tierHealth: 1.75,
+  tierDamage: 1.4,
+  tierReward: 1.25,
+  bossEvery: 5,
+  bossHealthMultiplier: 1.35,
+  spawnIntervalBase: 0.92,
+  spawnIntervalDecay: 0.965,
+  minSpawnInterval: 0.2,
+  clearCoinsBase: 12,
+  clearCoinsPerWave: 3.2,
+  mutatorFirstWave: 3,
+  mutatorSecondWave: 8,
+  maxMutators: 2,
+} as const;
+
+export const PRESTIGE_BALANCE = {
+  minWave: 8,
+  waveDivisor: 2,
+  damagePerCore: 0.02,
+  startingCashPerCore: 2,
+  maxDamageBonus: 10,
+  frameThresholds: [0, 4, 12, 30, 60],
+} as const;
+
+export const OFFLINE_BALANCE = {
+  minMinutes: 2,
+  maxHours: 8,
+  baseCoinsPerMinute: 1,
+  coinsPerMinutePerBestWave: 0.5,
+  maxCoinsPerMinute: 30,
+} as const;
