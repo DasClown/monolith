@@ -60,11 +60,11 @@ There is no separate App Store/Play Store binary yet. For a native shell, the PW
 
 ## Controls
 
-- **Auto-fire:** the monolith locks a target in range and fires automatically.
+- **First start:** wave 1 waits in STANDBY until you press **START WAVE**. Open OPS and configure your loadout first. After the first start, intermissions auto-launch as before.
 - **Space / P:** pause or resume the simulation.
 - **N / M:** trigger ability slot 1 or slot 2.
 - **1 / 2 / 3:** set game speed to 1x, 2x, or 3x. During a banner reward, these keys pick the three offered banners instead.
-- **Launch Early:** start the next wave during intermission for bonus cash.
+- **Launch Early:** start the next wave during later intermissions for bonus cash.
 - **Turret target priority:** NEAREST, STRONGEST, WEAKEST, or BOSS.
 - **Ability loadout:** in TURRET, choose a different ability for slot 1 or slot 2. Equipping an already-used ability swaps the two slots.
 - **OPS tab:** pilot name and tag, local leaderboard, save export/import, daily contracts, display settings, and PWA install.

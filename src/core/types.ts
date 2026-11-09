@@ -254,6 +254,7 @@ export interface RunSnapshot {
   waveKilled: number;
   enemiesAlive: number;
   nextWaveIn: number;
+  waitingForStart: boolean;
   isBossWave: boolean;
   waveMutators: WaveMutatorId[];
   towerHp: number;

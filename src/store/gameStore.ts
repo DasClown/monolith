@@ -52,6 +52,7 @@ export const INITIAL_SNAPSHOT: RunSnapshot = {
   waveKilled: 0,
   enemiesAlive: 0,
   nextWaveIn: 3.2,
+  waitingForStart: true,
   isBossWave: false,
   waveMutators: [],
   bossName: '',

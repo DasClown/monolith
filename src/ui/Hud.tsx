@@ -27,6 +27,7 @@ export function Hud() {
     snapshot.waveTotal > 0 ? Math.min(1, snapshot.waveKilled / snapshot.waveTotal) : 0;
   const hpPercent = Math.max(0, Math.min(1, snapshot.towerHp / Math.max(1, snapshot.towerMaxHp)));
   const earlyBonus = Math.max(1, Math.ceil(snapshot.nextWaveIn * 2.5));
+  const waitingForStart = snapshot.waitingForStart;
   const critical = hpPercent <= 0.3;
   const barrierPercent = Math.max(
     0,
@@ -68,7 +69,12 @@ export function Hud() {
               <span style={{ width: `${progress * 100}%` }} />
             </div>
             <div className="wave-card-meta">
-              {isIntermission ? (
+              {waitingForStart ? (
+                <>
+                  <Icon name="play" size={13} />
+                  <span>STANDBY · EDIT OPS</span>
+                </>
+              ) : isIntermission ? (
                 <>
                   <Icon name="timer" size={13} />
                   <span>AUTO-LAUNCH IN {snapshot.nextWaveIn.toFixed(1)}s</span>
@@ -271,17 +277,21 @@ export function Hud() {
         {isIntermission ? (
           <button
             type="button"
-            className="launch-button"
+            className={`launch-button ${waitingForStart ? 'is-start' : ''}`}
             onClick={() => dispatchCommand({ type: 'startWave' })}
-            disabled={snapshot.nextWaveIn <= 0.05}
-            aria-label={`Launch wave ${nextWave} early for ${earlyBonus} cash`}
+            disabled={!waitingForStart && snapshot.nextWaveIn <= 0.05}
+            aria-label={
+              waitingForStart
+                ? `Start wave ${nextWave}. Configure your loadout in OPS first.`
+                : `Launch wave ${nextWave} early for ${earlyBonus} cash`
+            }
           >
             <span className="launch-icon">
-              <Icon name="wave" size={20} />
+              <Icon name={waitingForStart ? 'play' : 'wave'} size={20} />
             </span>
             <span className="launch-copy">
-              <strong>LAUNCH EARLY</strong>
-              <small>BONUS +${earlyBonus}</small>
+              <strong>{waitingForStart ? 'START WAVE' : 'LAUNCH EARLY'}</strong>
+              <small>{waitingForStart ? 'CONFIGURE IN OPS FIRST' : `BONUS +${earlyBonus}`}</small>
             </span>
             <span className="launch-arrow">
               <Icon name="arrow-right" size={18} />

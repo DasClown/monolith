@@ -74,6 +74,7 @@ export class GameSession {
   private saveTouchAccumulator = 0;
   private overdriveRemaining = 0;
   private runKills = 0;
+  private waitingForStart = true;
 
   constructor() {
     this.save = loadSave();
@@ -219,6 +220,9 @@ export class GameSession {
   private readonly tick = (dt: number): void => {
     if (this.gameOver) return;
     this.publishAccumulator += dt;
+    if (this.waitingForStart) {
+      return;
+    }
     this.abilities.update(dt);
     const wasOverdriven = this.overdriveRemaining > 0;
     this.overdriveRemaining = Math.max(0, this.overdriveRemaining - dt);
@@ -497,6 +501,7 @@ export class GameSession {
   private endRun(): void {
     if (this.gameOver) return;
     this.gameOver = true;
+    this.waitingForStart = false;
     this.waves.phase = 'gameover';
     this.bannerOffer = null;
     this.bestWave = Math.max(this.bestWave, this.waves.wave);
@@ -524,6 +529,7 @@ export class GameSession {
     this.orbitals = [];
     this.waveKilled = 0;
     this.runKills = 0;
+    this.waitingForStart = true;
     this.overdriveRemaining = 0;
     this.abilities.resetCooldowns();
     this.bannerOffer = null;
@@ -577,6 +583,7 @@ export class GameSession {
     this.upgrades.resetRun();
     this.daily.recordRun(this.waves.wave, this.runKills, this.getPlayerLabel());
     this.runKills = 0;
+    this.waitingForStart = true;
     this.overdriveRemaining = 0;
     this.abilities.resetCooldowns();
     this.enemies = [];
@@ -869,10 +876,13 @@ export class GameSession {
     }
     if (command.type === 'startWave') {
       if (this.gameOver || this.waves.phase !== 'intermission') return;
-      const bonus = Math.max(1, Math.ceil(this.waves.countdown * 2.5));
+      const firstStart = this.waitingForStart;
+      this.waitingForStart = false;
+      if (firstStart) this.loop.resume();
+      const bonus = firstStart ? 0 : Math.max(1, Math.ceil(this.waves.countdown * 2.5));
       const started = this.waves.beginNextWave();
       if (!started) return;
-      this.economy.earnCash(bonus);
+      if (bonus > 0) this.economy.earnCash(bonus);
       this.waveKilled = 0;
       this.onWaveStarted(started);
       this.publish();
@@ -964,6 +974,7 @@ export class GameSession {
       waveKilled: this.waveKilled,
       enemiesAlive: wave.alive,
       nextWaveIn: wave.phase === 'intermission' ? wave.countdown : 0,
+      waitingForStart: this.waitingForStart,
       isBossWave: wave.phase === 'combat' && wave.isBossWave,
       waveMutators: wave.mutators,
       towerHp: Math.ceil(this.tower.hp),
