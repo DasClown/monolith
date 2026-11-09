@@ -273,9 +273,9 @@ export class GameSession {
       if (!attack) continue;
       const impactDamage =
         attack === 'slam'
-          ? enemy.currentDamage * 3
+          ? enemy.currentDamage * 1.6
           : attack === 'artillery'
-            ? enemy.currentDamage * 2.4
+            ? enemy.currentDamage * 1.3
             : enemy.currentDamage;
       if (attack === 'slam') {
         this.visualEvents.push({ type: 'bossSlam', x: enemy.x, y: enemy.y });
@@ -369,9 +369,14 @@ export class GameSession {
       const hits = this.collisionHash.queryCircle(orbital.x, orbital.y, orbital.size + 2);
       for (const enemy of hits) {
         if (enemy.dead || !orbital.canHit(enemy.id)) continue;
-        const crit = this.rng.chance(this.tower.stats.critChance);
-        const damage = orbital.damage * (crit ? this.tower.stats.critMultiplier : 1);
-        const result = enemy.takeDamage(damage, 'kinetic');
+        const crit = enemy.boss && this.rng.chance(this.tower.stats.critChance);
+        const result = enemy.boss
+          ? enemy.takeDamage(
+              Math.max(orbital.damage * 3, enemy.maxHealth * 0.018) *
+                (crit ? this.tower.stats.critMultiplier : 1),
+              'kinetic',
+            )
+          : enemy.execute();
         orbital.registerHit(enemy.id);
         this.visualEvents.push({ type: 'orbHit', x: enemy.x, y: enemy.y, crit });
         if (result.killed) this.handleEnemyKilled(enemy);
@@ -851,14 +856,14 @@ export class GameSession {
           nextOrbitalId++,
           index,
           desired,
-          96 + desired * 10,
+          82 + desired * 4,
           stats.orbDamage,
           stats.orbSpeed,
           stats.orbRadius,
         ),
       );
     }
-    const radius = 96 + desired * 10;
+    const radius = 82 + desired * 4;
     for (const orbital of this.orbitals) {
       orbital.applyStats(radius, stats.orbDamage, stats.orbSpeed, stats.orbRadius);
     }
@@ -877,13 +882,17 @@ export class GameSession {
     const tree = this.prestige.getTreeModifiers();
     const ascension = this.prestige.getDamageMultiplier(this.economy.getCoresEarned());
     const overdrive = this.overdriveRemaining > 0;
+    const rankArmor = Math.min(
+      0.15,
+      this.upgrades.getWorkshopRank() * TOWER_BALANCE.workshop.rankArmor,
+    );
     const boosted = {
       ...stats,
       damage: stats.damage * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1),
       fireRate: stats.fireRate * (1 + tree.fireRate) * (overdrive ? 1.6 : 1),
       critChance: Math.min(0.9, stats.critChance + tree.crit),
       maxHp: stats.maxHp * (1 + tree.maxHp),
-      armor: Math.min(0.8, stats.armor + tree.armor),
+      armor: Math.min(0.8, stats.armor + tree.armor + rankArmor),
       regen: stats.regen + tree.regen,
       orbDamage: stats.orbDamage * ascension * (1 + tree.damage),
       burnDps: stats.burnDps * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1),

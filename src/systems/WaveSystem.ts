@@ -238,7 +238,11 @@ export class WaveSystem {
 
   private buildWave(wave: number): BuiltWave {
     const rng = RNG.forWave(this.seed, wave);
-    const count = WAVE_BALANCE.baseCount + Math.floor(wave * WAVE_BALANCE.countPerWave);
+    const isBossWave = wave % WAVE_BALANCE.bossEvery === 0;
+    const baseCount = WAVE_BALANCE.baseCount + Math.floor(wave * WAVE_BALANCE.countPerWave);
+    const count = isBossWave
+      ? Math.max(4, Math.ceil(baseCount * WAVE_BALANCE.bossAddScale))
+      : baseCount;
     const mutators = this.pickMutators(wave, rng);
     const multipliers = this.getMutatorMultipliers(mutators);
     const specs: EnemySpawnSpec[] = [];
@@ -251,7 +255,6 @@ export class WaveSystem {
       Math.pow(WAVE_BALANCE.tierDamage, tier - 1);
     const speedScale = 1 + Math.min(WAVE_BALANCE.speedCap, WAVE_BALANCE.speedGrowth * (wave - 1));
     const rewardScale = 1 + wave * WAVE_BALANCE.rewardGrowth;
-    const isBossWave = wave % WAVE_BALANCE.bossEvery === 0;
 
     for (let i = 0; i < count; i += 1) {
       const kind = this.pickKind(wave, rng);

@@ -227,6 +227,17 @@ export class Enemy {
     return { applied, killed: false };
   }
 
+  /** Orbital execution: normal hostiles are removed on contact. */
+  execute(): DamageResult {
+    if (this.dead) return { applied: 0, killed: true };
+    const applied = this.hp + this.shield;
+    this.hp = 0;
+    this.shield = 0;
+    this.hitFlash = 0.14;
+    this.dead = true;
+    return { applied, killed: true };
+  }
+
   takeDamage(rawDamage: number, damageType: DamageType = 'kinetic'): DamageResult {
     if (this.dead) return { applied: 0, killed: true };
     const weakPointMultiplier = this.boss && this.weakPointOpen ? 1.55 : 1;

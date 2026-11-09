@@ -75,8 +75,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyKind, EnemyArchetype> = {
   crusher: {
     kind: 'crusher',
     name: 'Crusher',
-    health: 520,
-    damage: 18,
+    health: 420,
+    damage: 16,
     speed: 23,
     radius: 34,
     reward: 48,
@@ -89,8 +89,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyKind, EnemyArchetype> = {
   summoner: {
     kind: 'summoner',
     name: 'Summoner',
-    health: 440,
-    damage: 13,
+    health: 360,
+    damage: 12,
     speed: 27,
     radius: 30,
     reward: 52,
@@ -103,8 +103,8 @@ export const ENEMY_ARCHETYPES: Record<EnemyKind, EnemyArchetype> = {
   artillery: {
     kind: 'artillery',
     name: 'Artillery',
-    health: 360,
-    damage: 21,
+    health: 300,
+    damage: 18,
     speed: 18,
     radius: 32,
     reward: 46,

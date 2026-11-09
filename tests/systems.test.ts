@@ -256,3 +256,15 @@ describe('cosmetic collection', () => {
     expect(parsed?.cosmetics.equipped).toBe('azure');
   });
 });
+
+
+describe('orbital execution', () => {
+  it('removes a normal hostile on contact', () => {
+    const enemy = new Enemy(spec('brute', { maxHealth: 5000, shield: 1000 }));
+    const result = enemy.execute();
+    expect(result.killed).toBe(true);
+    expect(enemy.dead).toBe(true);
+    expect(enemy.hp).toBe(0);
+    expect(enemy.shield).toBe(0);
+  });
+});
