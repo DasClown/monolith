@@ -8,6 +8,8 @@ export type GameCommand =
   | { type: 'setSpeed'; speed: number }
   | { type: 'purchaseProduct'; id: string }
   | { type: 'exchangeGems' }
+  | { type: 'buyCosmetic'; id: string }
+  | { type: 'equipCosmetic'; id: string }
   | { type: 'setTargetMode'; mode: TargetMode }
   | { type: 'useAbility'; id: AbilityId }
   | { type: 'equipAbility'; slot: number; id: AbilityId }

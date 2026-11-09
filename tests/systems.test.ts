@@ -11,6 +11,7 @@ import { todayKey } from '../src/utils/daily';
 import { RNG } from '../src/core/rng';
 import { parseSaveText } from '../src/game/save';
 import { normalizePlayerName } from '../src/utils/profile';
+import { COSMETICS, DEFAULT_COSMETIC, isCosmeticId } from '../src/config/cosmetics';
 
 function spec(kind: EnemyKind, patch: Partial<EnemySpawnSpec> = {}): EnemySpawnSpec {
   return {
@@ -230,5 +231,28 @@ describe('damage types and boss attacks', () => {
       }
     }
     expect(attack).toBe('artillery');
+  });
+});
+
+
+describe('cosmetic collection', () => {
+  it('keeps the default palette free and catalog ids unique', () => {
+    const ids = COSMETICS.map((cosmetic) => cosmetic.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toContain(DEFAULT_COSMETIC);
+    expect(COSMETICS.find((cosmetic) => cosmetic.id === DEFAULT_COSMETIC)?.cost).toBe(0);
+    expect(isCosmeticId('toString')).toBe(false);
+    expect(isCosmeticId('azure')).toBe(true);
+  });
+
+  it('migrates a v2 save with a cosmetic selection', () => {
+    const parsed = parseSaveText(
+      JSON.stringify({
+        version: 2,
+        cosmetics: { owned: ['azure'], equipped: 'azure' },
+      }),
+    );
+    expect(parsed?.cosmetics.owned).toContain('obsidian');
+    expect(parsed?.cosmetics.equipped).toBe('azure');
   });
 });

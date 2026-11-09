@@ -81,6 +81,8 @@ export const INITIAL_SNAPSHOT: RunSnapshot = {
   cashRaw: '36',
   coinsRaw: '120',
   gemsRaw: '25',
+  cosmeticId: 'obsidian',
+  ownedCosmetics: ['obsidian'],
   bestWave: 0,
   speed: 1,
   paused: false,

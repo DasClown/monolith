@@ -16,6 +16,13 @@ import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { useGameStore } from '../store/gameStore';
 import { TOWER_BALANCE, WAVE_BALANCE } from '../config/balance';
+import {
+  COSMETICS,
+  COSMETIC_BY_ID,
+  DEFAULT_COSMETIC,
+  isCosmeticId,
+  type CosmeticId,
+} from '../config/cosmetics';
 import { formatCompact } from '../utils/format';
 import { loadCloudEntitlements, scheduleCloudSave, upsertCloudProfile } from '../services/cloud';
 import { normalizePlayerName, playerLabel } from '../utils/profile';
@@ -75,12 +82,15 @@ export class GameSession {
   private overdriveRemaining = 0;
   private runKills = 0;
   private waitingForStart = true;
+  private cosmeticId: CosmeticId = DEFAULT_COSMETIC;
+  private ownedCosmetics = new Set<CosmeticId>([DEFAULT_COSMETIC]);
 
   constructor() {
     this.save = loadSave();
     this.seed = (0x4d4f4e4f ^ (this.save.runs * 0x9e3779b1)) >>> 0;
     this.rng = new RNG(this.seed);
     this.bestWave = this.save.bestWave;
+    this.hydrateCosmetics();
 
     this.economy = new EconomySystem(
       this.save.coins,
@@ -132,6 +142,10 @@ export class GameSession {
 
   get currentWave(): number {
     return this.waves.wave;
+  }
+
+  get equippedCosmetic(): CosmeticId {
+    return this.cosmeticId;
   }
 
   get ascensionTier(): number {
@@ -764,6 +778,46 @@ export class GameSession {
     }
   }
 
+  private hydrateCosmetics(): void {
+    this.ownedCosmetics = new Set<CosmeticId>([DEFAULT_COSMETIC]);
+    for (const id of this.save.cosmetics.owned) {
+      if (isCosmeticId(id)) this.ownedCosmetics.add(id);
+    }
+    const equipped = this.save.cosmetics.equipped;
+    this.cosmeticId =
+      isCosmeticId(equipped) && this.ownedCosmetics.has(equipped)
+        ? equipped
+        : DEFAULT_COSMETIC;
+  }
+
+  private buyCosmetic(id: string): void {
+    if (!isCosmeticId(id)) return;
+    const def = COSMETIC_BY_ID[id];
+    if (this.ownedCosmetics.has(id)) {
+      this.equipCosmetic(id);
+      return;
+    }
+    if (!this.economy.spendGems(def.cost)) {
+      useGameStore.getState().pushToast(`NEED ${def.cost} GEMS`, 'violet');
+      return;
+    }
+    this.ownedCosmetics.add(id);
+    this.cosmeticId = id;
+    this.persist();
+    this.publish();
+    useGameStore.getState().showBanner('CHROMA UNLOCKED', def.name, 'gold');
+    useGameStore.getState().pushToast(`${def.name} EQUIPPED`, 'violet');
+  }
+
+  private equipCosmetic(id: string): void {
+    if (!isCosmeticId(id) || !this.ownedCosmetics.has(id)) return;
+    if (this.cosmeticId === id) return;
+    this.cosmeticId = id;
+    this.persist();
+    this.publish();
+    useGameStore.getState().pushToast(`${COSMETIC_BY_ID[id].name} EQUIPPED`, 'violet');
+  }
+
   private exchangeGems(): void {
     if (!this.economy.canAffordGems(GEM_EXCHANGE.gemCost)) {
       useGameStore.getState().pushToast('NOT ENOUGH GEMS', 'pink');
@@ -864,6 +918,12 @@ export class GameSession {
       entitlements: this.monetization.snapshot,
       purchaseCounts: this.monetization.getPurchaseCounts(),
       bestWave: this.bestWave,
+      cosmetics: {
+        owned: COSMETICS.filter((cosmetic) => this.ownedCosmetics.has(cosmetic.id)).map(
+          (cosmetic) => cosmetic.id,
+        ),
+        equipped: this.cosmeticId,
+      },
     };
     writeSave(this.save);
     scheduleCloudSave(this.save);
@@ -911,6 +971,14 @@ export class GameSession {
     }
     if (command.type === 'exchangeGems') {
       this.exchangeGems();
+      return;
+    }
+    if (command.type === 'buyCosmetic') {
+      this.buyCosmetic(command.id);
+      return;
+    }
+    if (command.type === 'equipCosmetic') {
+      this.equipCosmetic(command.id);
       return;
     }
     if (command.type === 'setTargetMode') {
@@ -1003,6 +1071,10 @@ export class GameSession {
       cashRaw: economy.cash.toString(),
       coinsRaw: economy.coins.toString(),
       gemsRaw: economy.gems.toString(),
+      cosmeticId: this.cosmeticId,
+      ownedCosmetics: COSMETICS.filter((cosmetic) =>
+        this.ownedCosmetics.has(cosmetic.id),
+      ).map((cosmetic) => cosmetic.id),
       bestWave: this.bestWave,
       speed: this.loop.timeScale,
       paused: this.loop.isPaused,

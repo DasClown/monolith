@@ -1,6 +1,12 @@
 import type { AbilityId, DailyState, Entitlements } from '../core/types';
+import { DEFAULT_COSMETIC, isCosmeticId, type CosmeticId } from '../config/cosmetics';
 import { emptyDailyState, todayKey } from '../utils/daily';
 import { createPlayerTag, DEFAULT_PLAYER_NAME, normalizePlayerName, normalizePlayerTag } from '../utils/profile';
+
+export interface CosmeticSave {
+  owned: CosmeticId[];
+  equipped: CosmeticId;
+}
 
 export interface SaveData {
   version: 2;
@@ -19,6 +25,7 @@ export interface SaveData {
   purchaseCounts: Record<string, number>;
   bestWave: number;
   runs: number;
+  cosmetics: CosmeticSave;
 }
 
 const STORAGE_KEY = 'monolith-defense.save.v2';
@@ -42,7 +49,21 @@ export function defaultSave(): SaveData {
     purchaseCounts: {},
     bestWave: 0,
     runs: 0,
+    cosmetics: { owned: [DEFAULT_COSMETIC], equipped: DEFAULT_COSMETIC },
   };
+}
+
+function normalizeCosmetics(value: unknown): CosmeticSave {
+  const parsed = value && typeof value === 'object' ? (value as Partial<CosmeticSave>) : null;
+  const owned = Array.isArray(parsed?.owned)
+    ? parsed.owned.filter((id): id is CosmeticId => isCosmeticId(id))
+    : [];
+  if (!owned.includes(DEFAULT_COSMETIC)) owned.unshift(DEFAULT_COSMETIC);
+  const equipped =
+    parsed && isCosmeticId(parsed.equipped) && owned.includes(parsed.equipped)
+      ? parsed.equipped
+      : DEFAULT_COSMETIC;
+  return { owned, equipped };
 }
 
 function normalizeDaily(value: unknown): DailyState {
@@ -112,6 +133,7 @@ export function loadSave(): SaveData {
               : {},
           bestWave: typeof parsed.bestWave === 'number' ? parsed.bestWave : 0,
           runs: typeof parsed.runs === 'number' ? parsed.runs : 0,
+          cosmetics: normalizeCosmetics(parsed.cosmetics),
         };
       }
     }
@@ -154,6 +176,7 @@ export function loadSave(): SaveData {
               : {},
           bestWave: typeof legacy.bestWave === 'number' ? legacy.bestWave : 0,
           runs: typeof legacy.runs === 'number' ? legacy.runs : 0,
+          cosmetics: { owned: [DEFAULT_COSMETIC], equipped: DEFAULT_COSMETIC },
         };
       }
     }
@@ -209,6 +232,7 @@ export function parseSaveText(text: string): SaveData | null {
           : {},
       bestWave: typeof parsed.bestWave === 'number' ? parsed.bestWave : 0,
       runs: typeof parsed.runs === 'number' ? parsed.runs : 0,
+      cosmetics: normalizeCosmetics(parsed.cosmetics),
     };
   } catch {
     return null;

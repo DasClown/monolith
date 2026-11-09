@@ -3,7 +3,12 @@ import { clamp, easeOutCubic, lerp } from '../core/math';
 import type { VisualEvent } from '../core/types';
 import type { GameSession, SessionRenderer } from '../game/GameSession';
 import { useSettingsStore } from '../store/settingsStore';
-import { COLORS, ORB_COLORS } from './palette';
+import {
+  COSMETIC_BY_ID,
+  DEFAULT_COSMETIC,
+  type CosmeticDefinition,
+} from '../config/cosmetics';
+import { COLORS } from './palette';
 import { createArena, createSpaceTexture, type ArenaView } from './background';
 import { EffectsLayer } from './EffectsLayer';
 import {
@@ -36,6 +41,9 @@ export class GameRenderer implements SessionRenderer {
   private readonly orbitalTrail = new Graphics();
   private readonly rangeIndicator = new Graphics();
   private readonly overdriveAura = new Graphics();
+  private readonly cosmeticAura = new Graphics();
+  private currentCosmetic: CosmeticDefinition = COSMETIC_BY_ID[DEFAULT_COSMETIC];
+  private lastCosmeticId = '';
   private readonly screenFx = new Container();
   private readonly flash = new Graphics();
   private readonly threatArrows: Graphics[] = [];
@@ -114,7 +122,7 @@ export class GameRenderer implements SessionRenderer {
       .stroke({ width: 3, color: COLORS.gold, alpha: 0.85 })
       .circle(0, 0, 94)
       .stroke({ width: 1.5, color: COLORS.pink, alpha: 0.45 });
-    this.towerLayer.addChild(this.towerView.container, this.overdriveAura);
+    this.towerLayer.addChild(this.cosmeticAura, this.towerView.container, this.overdriveAura);
     this.app.stage.addChild(this.world);
 
     for (let i = 0; i < 8; i += 1) {
@@ -145,6 +153,7 @@ export class GameRenderer implements SessionRenderer {
     this.flashAmount = Math.max(0, this.flashAmount - dt * 3.8);
 
     this.layoutWorld();
+    this.applyCosmetic(session);
     this.arena.outerRing.rotation += dt * 0.12;
     this.arena.innerRing.rotation -= dt * 0.2;
     this.syncTower(session, dt);
@@ -229,6 +238,8 @@ export class GameRenderer implements SessionRenderer {
     this.overdriveAura.alpha = 0.45 + Math.sin(this.time * 9) * 0.25;
     view.shield.rotation += dt * (0.18 + armorRatio * 0.32);
     view.shield.scale.set(1 + Math.sin(this.time * 2.4) * 0.015);
+    this.cosmeticAura.rotation += dt * 0.08;
+    this.cosmeticAura.alpha = 0.36 + Math.sin(this.time * 1.7) * 0.1;
 
     const ascensionTier = session.ascensionTier;
     view.frameRings.forEach((ring, index) => {
@@ -240,6 +251,30 @@ export class GameRenderer implements SessionRenderer {
         ring.scale.set(1 + Math.sin(this.time * 2.1 + index) * 0.012);
       }
     });
+  }
+
+  private applyCosmetic(session: GameSession): void {
+    const next = COSMETIC_BY_ID[session.equippedCosmetic] ?? COSMETIC_BY_ID[DEFAULT_COSMETIC];
+    if (next.id === this.lastCosmeticId) return;
+    this.lastCosmeticId = next.id;
+    this.currentCosmetic = next;
+    this.towerView.coreGlow.tint = next.core;
+    this.towerView.core.tint = next.core;
+    this.towerView.outerRing.tint = next.accent;
+    this.towerView.shield.tint = next.core;
+    this.lastRange = -1;
+    this.cosmeticAura.clear();
+    this.cosmeticAura
+      .circle(0, 0, 111)
+      .stroke({ width: 1.5, color: next.accent, alpha: 0.2 });
+    for (let i = 0; i < 6; i += 1) {
+      const start = i * (Math.PI / 3) + 0.18;
+      this.cosmeticAura
+        .arc(0, 0, 117, start, start + 0.42)
+        .stroke({ width: 2.5, color: next.core, alpha: 0.34 });
+    }
+    for (const view of this.projectileViews.values()) view.root.tint = next.projectile;
+    for (const view of this.orbitalViews.values()) view.root.tint = next.orbit;
   }
 
   private syncEnemies(session: GameSession, alpha: number, dt: number): void {
@@ -323,11 +358,14 @@ export class GameRenderer implements SessionRenderer {
         this.projectileViews.set(projectile.id, view);
         this.projectileLayer.addChild(view.root);
       }
+      view.root.tint = this.currentCosmetic.projectile;
       const x = lerp(projectile.prevX, projectile.x, alpha);
       const y = lerp(projectile.prevY, projectile.y, alpha);
       view.root.position.set(x, y);
       view.root.rotation = projectile.angle;
-      const color = projectile.crit ? COLORS.pinkSoft : COLORS.cyan;
+      const color = projectile.crit
+        ? this.currentCosmetic.accent
+        : this.currentCosmetic.projectile;
       this.projectileTrail
         .moveTo(x - Math.cos(projectile.angle) * 12, y - Math.sin(projectile.angle) * 12)
         .lineTo(x - Math.cos(projectile.angle) * 44, y - Math.sin(projectile.angle) * 44)
@@ -348,10 +386,10 @@ export class GameRenderer implements SessionRenderer {
     if (orbitRadius) {
       this.orbitalTrail
         .circle(0, 0, orbitRadius)
-        .stroke({ width: 1.5, color: COLORS.violet, alpha: 0.24 });
+        .stroke({ width: 1.5, color: this.currentCosmetic.orbit, alpha: 0.24 });
       this.orbitalTrail
         .circle(0, 0, orbitRadius)
-        .stroke({ width: 5, color: COLORS.violet, alpha: 0.035 });
+        .stroke({ width: 5, color: this.currentCosmetic.orbit, alpha: 0.035 });
     }
     session.orbitals.forEach((orbital, index) => {
       seen.add(orbital.id);
@@ -361,13 +399,14 @@ export class GameRenderer implements SessionRenderer {
         this.orbitalViews.set(orbital.id, view);
         this.orbitalLayer.addChild(view.root);
       }
+      view.root.tint = this.currentCosmetic.orbit;
       const x = lerp(orbital.prevX, orbital.x, alpha);
       const y = lerp(orbital.prevY, orbital.y, alpha);
       view.root.position.set(x, y);
       view.root.rotation = this.time * 2.2 + orbital.angle;
       const scale = 1 + Math.sin(this.time * 5 + index) * 0.07;
       view.root.scale.set(scale);
-      const color = ORB_COLORS[index % ORB_COLORS.length] ?? COLORS.cyan;
+      const color = this.currentCosmetic.orbit;
       this.orbitalTrail
         .arc(0, 0, orbital.radius, orbital.angle - 0.72, orbital.angle)
         .stroke({ width: 7, color, alpha: 0.24 });
@@ -491,12 +530,12 @@ export class GameRenderer implements SessionRenderer {
     this.rangeIndicator.clear();
     this.rangeIndicator
       .circle(0, 0, range)
-      .stroke({ width: 2, color: COLORS.cyan, alpha: 0.3 });
+      .stroke({ width: 2, color: this.currentCosmetic.core, alpha: 0.3 });
     for (let i = 0; i < 18; i += 1) {
       const start = (i / 18) * Math.PI * 2;
       this.rangeIndicator
         .arc(0, 0, range, start, start + 0.16)
-        .stroke({ width: 4, color: COLORS.cyan, alpha: 0.15 });
+        .stroke({ width: 4, color: this.currentCosmetic.core, alpha: 0.15 });
     }
   }
 

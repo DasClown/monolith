@@ -276,6 +276,8 @@ export interface RunSnapshot {
   cashRaw: string;
   coinsRaw: string;
   gemsRaw: string;
+  cosmeticId: string;
+  ownedCosmetics: string[];
   bestWave: number;
   speed: number;
   paused: boolean;

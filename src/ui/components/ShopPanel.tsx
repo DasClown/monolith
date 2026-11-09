@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore';
 import { dispatchCommand } from '../../game/commands';
 import { GEM_EXCHANGE } from '../../systems/MonetizationSystem';
+import { COSMETICS, cosmeticHex } from '../../config/cosmetics';
 import { Icon, type IconName } from './Icons';
 
 const PRODUCT_ICONS: Record<string, IconName> = {
@@ -18,6 +19,7 @@ export function ShopPanel() {
   const storeStatus = snapshot.storeStatus;
   const gems = Number(snapshot.gemsRaw);
   const canExchange = Number.isFinite(gems) && gems >= GEM_EXCHANGE.gemCost;
+  const ownedCosmetics = new Set(snapshot.ownedCosmetics);
 
   return (
     <div className="vault-panel">
@@ -60,6 +62,81 @@ export function ShopPanel() {
           </span>
         </div>
       </div>
+
+      <section className="chroma-panel" aria-labelledby="chroma-title">
+        <div className="chroma-head">
+          <div>
+            <span className="eyebrow">GEM ATELIER</span>
+            <h3 id="chroma-title">CHROMA COLLECTION</h3>
+          </div>
+          <span className="chroma-count">
+            {snapshot.ownedCosmetics.length}/{COSMETICS.length} UNLOCKED
+          </span>
+        </div>
+        <p className="chroma-intro">
+          Permanent cosmetic palettes for the monolith core, projectiles and orbital trail.
+          No combat effect.
+        </p>
+        <div className="chroma-grid">
+          {COSMETICS.map((cosmetic) => {
+            const owned = ownedCosmetics.has(cosmetic.id);
+            const equipped = snapshot.cosmeticId === cosmetic.id;
+            const canBuy = Number.isFinite(gems) && gems >= cosmetic.cost;
+            const core = cosmeticHex(cosmetic.core);
+            const accent = cosmeticHex(cosmetic.accent);
+            return (
+              <article
+                key={cosmetic.id}
+                className={`chroma-card ${owned ? 'is-owned' : ''} ${equipped ? 'is-equipped' : ''}`}
+              >
+                <div
+                  className="chroma-preview"
+                  style={{
+                    borderColor: core,
+                    background: `radial-gradient(circle at 50% 50%, ${core}26, transparent 68%)`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <span className="chroma-halo" style={{ borderColor: accent }} />
+                  <span
+                    className="chroma-orb"
+                    style={{ background: core, boxShadow: `0 0 18px ${core}` }}
+                  />
+                </div>
+                <div className="chroma-copy">
+                  <strong>{cosmetic.name}</strong>
+                  <p>{cosmetic.tagline}</p>
+                </div>
+                <button
+                  type="button"
+                  className={`chroma-action ${equipped ? 'is-equipped' : ''}`}
+                  disabled={equipped || (!owned && !canBuy)}
+                  aria-pressed={equipped}
+                  onClick={() =>
+                    dispatchCommand(
+                      owned
+                        ? { type: 'equipCosmetic', id: cosmetic.id }
+                        : { type: 'buyCosmetic', id: cosmetic.id },
+                    )
+                  }
+                >
+                  {equipped ? (
+                    <>
+                      <Icon name="check" size={14} /> EQUIPPED
+                    </>
+                  ) : owned ? (
+                    'EQUIP'
+                  ) : (
+                    <>
+                      <Icon name="gem" size={13} /> {cosmetic.cost}
+                    </>
+                  )}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       {storeStatus === 'disabled' ? (
         <div className="vault-offline">
