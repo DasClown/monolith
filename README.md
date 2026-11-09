@@ -217,8 +217,9 @@ All bosses expose weak points, gain phases at 66% and 33% health, and become fas
 
 Setup: [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md). Legal checklist: [docs/LEGAL_CHECKLIST.md](docs/LEGAL_CHECKLIST.md).
 
-The current GitHub Pages build has no Supabase or Paddle secrets, so cloud login is
-hidden and the Vault is intentionally closed until those accounts are created.
+The live build now has a working Supabase cloud login and a Paddle sandbox checkout for the
+€2.99 Supporter Pack. This is still sandbox-only: no real money is charged until Paddle
+approves the live account and the shop is switched to production credentials.
 
 ## Persistence
 
