@@ -157,7 +157,7 @@ export interface ShopProduct {
   description: string;
   detail: string;
   price: string;
-  currency: 'USD' | 'gems' | 'free';
+  currency: 'EUR' | 'USD' | 'gems' | 'free';
   icon: 'gem' | 'coins' | 'rocket' | 'pass' | 'shield';
   badge?: string;
   repeatable: boolean;
@@ -174,6 +174,7 @@ export interface Entitlements {
   adFree: boolean;
   battlePass: boolean;
   starterPack: boolean;
+  supporter: boolean;
 }
 
 export interface BannerView {
@@ -285,6 +286,7 @@ export interface RunSnapshot {
   bossName: string;
   playerName: string;
   playerTag: string;
+  storeStatus: 'live' | 'mock' | 'disabled';
   abilities: AbilityView[];
   barrier: number;
   overdriveRemaining: number;

@@ -35,6 +35,14 @@ jobs:
 
       - name: Build for Pages
         run: npm run build:pages
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_PADDLE_CLIENT_TOKEN: ${{ secrets.VITE_PADDLE_CLIENT_TOKEN }}
+          VITE_PADDLE_ENV: ${{ secrets.VITE_PADDLE_ENV }}
+          VITE_PADDLE_PRICE_SUPPORTER: ${{ secrets.VITE_PADDLE_PRICE_SUPPORTER }}
+          VITE_PADDLE_PRICE_COIN_DOUBLER: ${{ secrets.VITE_PADDLE_PRICE_COIN_DOUBLER }}
+          VITE_PADDLE_PRICE_BATTLE_PASS: ${{ secrets.VITE_PADDLE_PRICE_BATTLE_PASS }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

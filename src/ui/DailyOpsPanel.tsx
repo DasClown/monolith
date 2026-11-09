@@ -6,6 +6,7 @@ import { parseSaveText, writeSave } from '../game/save';
 import { normalizePlayerName } from '../utils/profile';
 import { useGameStore } from '../store/gameStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { CloudAccountPanel } from './CloudAccountPanel';
 import { Icon } from './components/Icons';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -21,6 +22,7 @@ export function DailyOpsPanel() {
   const cores = useGameStore((state) => state.snapshot.cores);
   const playerName = useGameStore((state) => state.snapshot.playerName);
   const playerTag = useGameStore((state) => state.snapshot.playerTag);
+  const supporter = useGameStore((state) => state.snapshot.entitlements.supporter);
   const screenShake = useSettingsStore((state) => state.screenShake);
   const showRange = useSettingsStore((state) => state.showRange);
   const reducedEffects = useSettingsStore((state) => state.reducedEffects);
@@ -113,6 +115,7 @@ export function DailyOpsPanel() {
               onChange={(event) => setDraftName(event.target.value)}
             />
             <span className="profile-tag">#{playerTag}</span>
+            {supporter && <span className="profile-supporter">SUPPORTER</span>}
             <button
               type="button"
               className="profile-save"
@@ -144,6 +147,8 @@ export function DailyOpsPanel() {
           />
         </div>
       </section>
+
+      <CloudAccountPanel />
 
       <div className="ops-grid">
         <section className="ops-section">

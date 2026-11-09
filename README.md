@@ -205,16 +205,20 @@ All bosses expose weak points, gain phases at 66% and 33% health, and become fas
 - Claimed once per absence.
 - Report appears inline in the drawer and disappears after claiming.
 
-### Monetization
+### Accounts and monetization
 
-`MonetizationSystem` exposes production-shaped hooks:
+- Optional Supabase login with email magic link or Google.
+- Cloud save, profile name/tag, and entitlement sync.
+- `PaddleIapAdapter` opens Paddle Checkout only when Supabase and Paddle are configured.
+- A signed Supabase Edge Function webhook grants permanent entitlements server-side.
+- Production without configuration shows `VAULT CLOSED`; it never grants free purchases.
+- Development uses `MockIapAdapter` for local testing.
+- Supporter Pack is the recommended first paid product; gameplay upgrades stay earnable.
 
-- `IapAdapter` for RevenueCat, StoreKit, Play Billing, or another bridge.
-- Permanent coin doubler, battle pass payout multiplier, ad-free entitlement, and starter bundle.
-- Extensible runtime product catalog via `registerProduct`.
-- The shipped adapter is `MockIapAdapter`, a sandbox checkout that never charges real money.
+Setup: [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md). Legal checklist: [docs/LEGAL_CHECKLIST.md](docs/LEGAL_CHECKLIST.md).
 
-Replace the adapter in `src/systems/MonetizationSystem.ts` before connecting a real storefront.
+The current GitHub Pages build has no Supabase or Paddle secrets, so cloud login is
+hidden and the Vault is intentionally closed until those accounts are created.
 
 ## Persistence
 
@@ -240,7 +244,7 @@ npm test
 npm run build
 ```
 
-The 15 Vitest tests cover ability swapping and cooldowns, prestige spending and prerequisites, daily contracts and named leaderboard entries, player-name validation, v2 save import parsing, boss rotation, summon minions, artillery telegraphs, damage types, and deterministic RNG. Browser QA covers desktop, tablet, 390px, 320px, short landscape, production PWA installability, and offline reload.
+The 17 Vitest tests cover ability swapping and cooldowns, prestige spending and prerequisites, daily contracts and named leaderboard entries, player-name validation, v2 save import parsing, boss rotation, summon minions, artillery telegraphs, damage types, and deterministic RNG. Browser QA covers desktop, tablet, 390px, 320px, short landscape, production PWA installability, and offline reload.
 
 ## Further expansion ideas
 
@@ -248,7 +252,9 @@ The 15 Vitest tests cover ability swapping and cooldowns, prestige spending and 
 - **Audio layer:** synthesized shots, impacts, banners, and boss warnings with volume controls.
 - **Sector campaigns:** biome variants with distinct wave curves and boss modifiers.
 - **More ability archetypes:** heal, decoy, and zone-control slots.
-- **Cloud saves:** account sync and cross-device leaderboards.
+- **Global leaderboard:** daily seeded runs with server-side verification.
+- **Legal pages:** complete the checklist before enabling live payments.
+- **Native wrapper:** Capacitor packaging after the web version is stable.
 
 ## Design references
 

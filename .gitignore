@@ -6,3 +6,9 @@ dist-ssr
 .DS_Store
 npm-debug.log*
 deepseek-costs/
+.env
+.env.*
+!.env.example
+
+.tools/
+plugins/

@@ -17,6 +17,7 @@ import { Tower } from '../entities/Tower';
 import { useGameStore } from '../store/gameStore';
 import { TOWER_BALANCE, WAVE_BALANCE } from '../config/balance';
 import { formatCompact } from '../utils/format';
+import { loadCloudEntitlements, scheduleCloudSave, upsertCloudProfile } from '../services/cloud';
 import { normalizePlayerName, playerLabel } from '../utils/profile';
 import { AbilitySystem } from '../systems/AbilitySystem';
 import { BannerSystem } from '../systems/BannerSystem';
@@ -167,12 +168,28 @@ export class GameSession {
     this.save.playerName = normalized;
     this.persist();
     this.publish();
+    void upsertCloudProfile(normalized, this.save.playerTag);
     useGameStore.getState().pushToast(`PILOT NAME · ${normalized.toUpperCase()}`, 'cyan');
   }
 
   createSaveExport(): string {
     this.persist();
     return JSON.stringify(this.save, null, 2);
+  }
+
+  exportSaveData(): SaveData {
+    this.persist();
+    return this.save;
+  }
+
+  async refreshCloudEntitlements(): Promise<void> {
+    const entitlements = await loadCloudEntitlements();
+    if (!entitlements) return;
+    this.monetization.hydrate(entitlements, this.monetization.getPurchaseCounts());
+    this.save.entitlements = this.monetization.snapshot;
+    this.applyMultipliers();
+    this.persist();
+    this.publish();
   }
 
   setRenderer(renderer: SessionRenderer | null): void {
@@ -727,6 +744,10 @@ export class GameSession {
         this.persist();
         useGameStore.getState().pushToast(result.message, 'gold');
         this.publish();
+        if (this.monetization.isLive) {
+          window.setTimeout(() => void this.refreshCloudEntitlements(), 3000);
+          window.setTimeout(() => void this.refreshCloudEntitlements(), 9000);
+        }
       } else {
         useGameStore.getState().pushToast(result.message, 'pink');
       }
@@ -838,6 +859,7 @@ export class GameSession {
       bestWave: this.bestWave,
     };
     writeSave(this.save);
+    scheduleCloudSave(this.save);
   }
 
   private readonly handleCommand = (command: GameCommand): void => {
@@ -956,6 +978,7 @@ export class GameSession {
       bossName: boss ? ENEMY_ARCHETYPES[boss.kind].name.toUpperCase() : '',
       playerName: this.save.playerName,
       playerTag: this.save.playerTag,
+      storeStatus: this.monetization.storeStatus,
       abilities: abilityViews,
       barrier: Math.ceil(this.tower.barrier),
       overdriveRemaining: this.overdriveRemaining,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AbilitySystem } from '../src/systems/AbilitySystem';
 import { DailySystem } from '../src/systems/DailySystem';
 import { EconomySystem } from '../src/systems/EconomySystem';
+import { DisabledIapAdapter, MonetizationSystem } from '../src/systems/MonetizationSystem';
 import { PrestigeSystem } from '../src/systems/PrestigeSystem';
 import { WaveSystem } from '../src/systems/WaveSystem';
 import { Enemy } from '../src/entities/Enemy';
@@ -119,6 +120,25 @@ describe('daily operations', () => {
     expect(daily.getLeaderboard()[0]?.wave).toBe(9);
     expect(daily.getLeaderboard()[0]?.name).toBe('REX#C3D4');
     expect(daily.getLeaderboard()).toHaveLength(3);
+  });
+});
+
+describe('production store safety', () => {
+  it('does not grant anything when the store is disabled', async () => {
+    const store = new MonetizationSystem(new DisabledIapAdapter());
+    const economy = new EconomySystem(0, 0, 0, 0);
+    expect(store.storeStatus).toBe('disabled');
+    expect(store.getShopViews().every((product) => product.disabled)).toBe(true);
+    const result = await store.purchase('supporter_pack', economy);
+    expect(result.ok).toBe(false);
+    expect(store.snapshot.supporter).toBe(false);
+  });
+
+  it('hydrates permanent supporter status from the cloud', () => {
+    const store = new MonetizationSystem(new DisabledIapAdapter());
+    store.hydrate({ supporter: true }, {});
+    expect(store.snapshot.supporter).toBe(true);
+    expect(store.getShopViews().find((product) => product.id === 'supporter_pack')?.owned).toBe(true);
   });
 });
 

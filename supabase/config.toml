@@ -1,0 +1,4 @@
+# Paddle sends webhooks without a Supabase JWT. The function verifies the
+# Paddle-Signature header itself and uses the service-role key internally.
+[functions.paddle-webhook]
+verify_jwt = false

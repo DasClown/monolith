@@ -57,6 +57,7 @@ export const INITIAL_SNAPSHOT: RunSnapshot = {
   bossName: '',
   playerName: 'PILOT',
   playerTag: '0000',
+  storeStatus: 'disabled',
   abilities: [],
   barrier: 0,
   overdriveRemaining: 0,
@@ -108,6 +109,7 @@ export const INITIAL_SNAPSHOT: RunSnapshot = {
     adFree: false,
     battlePass: false,
     starterPack: false,
+    supporter: false,
   },
 };
 

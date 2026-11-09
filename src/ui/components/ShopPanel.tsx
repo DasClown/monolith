@@ -15,6 +15,7 @@ export function ShopPanel() {
   const shop = useGameStore((state) => state.shop);
   const busy = useGameStore((state) => state.shopBusy);
   const snapshot = useGameStore((state) => state.snapshot);
+  const storeStatus = snapshot.storeStatus;
   const gems = Number(snapshot.gemsRaw);
   const canExchange = Number.isFinite(gems) && gems >= GEM_EXCHANGE.gemCost;
 
@@ -25,7 +26,13 @@ export function ShopPanel() {
           <span className="eyebrow">PREMIUM SIGNAL</span>
           <h2>NEON VAULT</h2>
         </div>
-        <p>Permanent multipliers and currency packs. Local demo checkout, no real charge.</p>
+        <p>
+          {storeStatus === 'live'
+            ? 'Secure Paddle checkout. Support MONOLITH without changing the free core game.'
+            : storeStatus === 'mock'
+              ? 'Development checkout. No real charge.'
+              : 'Store offline. Add Paddle keys to enable real purchases.'}
+        </p>
       </div>
 
       <div className="vault-status">
@@ -48,9 +55,21 @@ export function ShopPanel() {
           <span className={snapshot.entitlements.adFree ? 'flag is-on' : 'flag'}>
             <Icon name="shield" size={13} /> AD-FREE
           </span>
+          <span className={snapshot.entitlements.supporter ? 'flag is-on' : 'flag'}>
+            <Icon name="rocket" size={13} /> SUPPORTER
+          </span>
         </div>
       </div>
 
+      {storeStatus === 'disabled' ? (
+        <div className="vault-offline">
+          <Icon name="shield" size={24} />
+          <div>
+            <strong>VAULT CLOSED</strong>
+            <span>Live payments are not configured yet. The core game remains free to play.</span>
+          </div>
+        </div>
+      ) : (
       <div className="store-grid">
         {shop.map((product) => (
           <article
@@ -89,6 +108,7 @@ export function ShopPanel() {
           </article>
         ))}
       </div>
+      )}
 
       <div className="exchange-strip">
         <div className="exchange-icon">
@@ -119,8 +139,11 @@ export function ShopPanel() {
       </div>
 
       <p className="vault-disclaimer">
-        SANDBOX CHECKOUT. Hook a billing adapter into MonetizationSystem before shipping live
-        products.
+        {storeStatus === 'live'
+          ? 'SECURE CHECKOUT VIA PADDLE. PURCHASES SYNC TO YOUR CLOUD ACCOUNT.'
+          : storeStatus === 'mock'
+            ? 'DEVELOPMENT CHECKOUT. NO REAL CHARGE.'
+            : 'STORE OFFLINE. LIVE PAYMENTS ARE DISABLED UNTIL PADDLE IS CONFIGURED.'}
       </p>
     </div>
   );
