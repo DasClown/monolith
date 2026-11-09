@@ -12,3 +12,5 @@ deepseek-costs/
 
 .tools/
 plugins/
+.secrets/
+supabase/.temp/

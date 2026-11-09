@@ -21,6 +21,7 @@ import { Icon } from './components/Icons';
 export function CloudAccountPanel() {
   const playerName = useGameStore((state) => state.snapshot.playerName);
   const playerTag = useGameStore((state) => state.snapshot.playerTag);
+  const googleEnabled = import.meta.env.VITE_AUTH_GOOGLE_ENABLED === 'true';
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -144,9 +145,11 @@ export function CloudAccountPanel() {
               <button type="button" className="cloud-action" onClick={sendLink} disabled={busy}>
                 SEND MAGIC LINK
               </button>
-              <button type="button" className="cloud-action" onClick={google} disabled={busy}>
-                GOOGLE
-              </button>
+              {googleEnabled && (
+                <button type="button" className="cloud-action" onClick={google} disabled={busy}>
+                  GOOGLE
+                </button>
+              )}
             </div>
             <p className="cloud-note">
               Optional. Local play stays available; a linked account enables cross-device
