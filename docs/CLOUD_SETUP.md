@@ -22,7 +22,7 @@ supporter purchases.
    - Google OAuth
 5. In Authentication > URL Configuration, set:
    - Site URL: your deployed game URL
-   - Redirect URL: the same URL, including `/monolith-defense/` for GitHub Pages
+   - Redirect URL: the same URL, including `/monolith/` for GitHub Pages
 6. Deploy the webhook:
    ```bash
    supabase functions deploy paddle-webhook --no-verify-jwt

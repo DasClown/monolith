@@ -4,9 +4,9 @@ A playable incremental tower defense built with **Vite, TypeScript, React, Pixi.
 
 ## Live
 
-**Play it here:** https://dasclown.github.io/monolith-defense/
+**Play it here:** https://dasclown.github.io/monolith/
 
-**Source:** https://github.com/DasClown/monolith-defense
+**Source:** https://github.com/DasClown/monolith
 
 ## Preview
 
