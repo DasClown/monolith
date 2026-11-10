@@ -84,7 +84,7 @@ export const UPGRADE_DEFS: ReadonlyArray<UpgradeDef> = [
   {
     id: 'armor',
     name: 'Ablative Plating',
-    description: '+6% incoming damage reduction, up to 80%.',
+    description: '+7% incoming damage reduction, up to 85%.',
     icon: 'armor',
     tab: 'turret',
     currency: 'cash',
@@ -204,7 +204,7 @@ export const UPGRADE_DEFS: ReadonlyArray<UpgradeDef> = [
   {
     id: 'hullBlueprints',
     name: 'Core Blueprints',
-    description: '+10 base core integrity.',
+    description: '+12 base core integrity.',
     icon: 'blueprint',
     tab: 'workshop',
     currency: 'coins',

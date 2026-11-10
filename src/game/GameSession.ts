@@ -369,9 +369,9 @@ export class GameSession {
       if (!attack) continue;
       const impactDamage =
         attack === 'slam'
-          ? enemy.currentDamage * 1.6
+          ? enemy.currentDamage * 1.4
           : attack === 'artillery'
-            ? enemy.currentDamage * 1.3
+            ? enemy.currentDamage * 1.2
             : enemy.currentDamage;
       if (attack === 'slam') {
         this.visualEvents.push({ type: 'bossSlam', x: enemy.x, y: enemy.y });
@@ -517,9 +517,9 @@ export class GameSession {
 
     this.bossFightElapsed += dt;
     const tier =
-      this.bossFightElapsed < 25
+      this.bossFightElapsed < 10
         ? 0
-        : Math.min(6, 1 + Math.floor((this.bossFightElapsed - 25) / 10));
+        : Math.min(8, 1 + Math.floor((this.bossFightElapsed - 10) / 5));
     if (tier === this.bossOverloadTier) return;
     this.bossOverloadTier = tier;
     this.tower.applyStats(this.getTowerStats());
@@ -1067,7 +1067,7 @@ export class GameSession {
       fireRate: stats.fireRate * (1 + tree.fireRate) * (overdrive ? 1.6 : 1),
       critChance: Math.min(0.9, stats.critChance + tree.crit),
       maxHp: stats.maxHp * (1 + tree.maxHp),
-      armor: Math.min(0.8, stats.armor + tree.armor + rankArmor),
+      armor: Math.min(0.85, stats.armor + tree.armor + rankArmor),
       regen: stats.regen + tree.regen,
       orbDamage: stats.orbDamage * ascension * (1 + tree.damage) * overload,
       burnDps: stats.burnDps * ascension * (1 + tree.damage) * (overdrive ? 1.25 : 1),
