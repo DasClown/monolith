@@ -15,7 +15,7 @@ import { Orbital, relativeOrbitalAngle } from '../entities/Orbital';
 import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { useGameStore } from '../store/gameStore';
-import { TOWER_BALANCE, WAVE_BALANCE } from '../config/balance';
+import { FOUNDRY_BALANCE, TOWER_BALANCE, WAVE_BALANCE } from '../config/balance';
 import {
   COSMETICS,
   COSMETIC_BY_ID,
@@ -24,6 +24,7 @@ import {
   type CosmeticId,
 } from '../config/cosmetics';
 import { formatCompact } from '../utils/format';
+import { weekKey } from '../utils/daily';
 import { loadCloudEntitlements, scheduleCloudSave, upsertCloudProfile } from '../services/cloud';
 import { normalizePlayerName, playerLabel } from '../utils/profile';
 import { AbilitySystem } from '../systems/AbilitySystem';
@@ -81,6 +82,7 @@ export class GameSession {
   private saveTouchAccumulator = 0;
   private overdriveRemaining = 0;
   private runKills = 0;
+  private runStartedAt = Date.now();
   private waitingForStart = true;
   private bossFightElapsed = 0;
   private bossOverloadTier = 0;
@@ -89,6 +91,7 @@ export class GameSession {
 
   constructor() {
     this.save = loadSave();
+    this.normalizeFoundryWeek();
     this.seed = (0x4d4f4e4f ^ (this.save.runs * 0x9e3779b1)) >>> 0;
     this.rng = new RNG(this.seed);
     this.bestWave = this.save.bestWave;
@@ -192,6 +195,96 @@ export class GameSession {
   createSaveExport(): string {
     this.persist();
     return JSON.stringify(this.save, null, 2);
+  }
+
+  /**
+   * Portable balance/debug report. Contains no auth tokens or payment data.
+   * Copy this from the game-over screen when reporting a bad run.
+   */
+  createRunReport(): string {
+    const boss = this.enemies.find((enemy) => enemy.boss && !enemy.dead) ?? null;
+    const wave = this.waves.getSnapshot(this.enemies.length);
+    const report = {
+      schema: 1,
+      generatedAt: new Date().toISOString(),
+      player: { name: this.save.playerName, tag: this.save.playerTag },
+      run: {
+        startedAt: new Date(this.runStartedAt).toISOString(),
+        seconds: Math.round((Date.now() - this.runStartedAt) / 1000),
+        seed: this.seed,
+        wave: wave.wave,
+        tier: wave.tier,
+        phase: wave.phase,
+        total: wave.total,
+        spawned: wave.spawned,
+        killed: this.waveKilled,
+        alive: wave.alive,
+        runKills: this.runKills,
+        mutators: wave.mutators,
+        bossWave: wave.isBossWave,
+      },
+      tower: {
+        hp: Math.ceil(this.tower.hp),
+        maxHp: Math.ceil(this.tower.maxHp),
+        barrier: Math.ceil(this.tower.barrier),
+        lastDamage: Math.round(this.tower.lastDamage * 10) / 10,
+        stats: { ...this.tower.stats },
+        dps: this.getDps(),
+        targetMode: this.targetMode,
+      },
+      boss: boss
+        ? {
+            kind: boss.kind,
+            hp: Math.ceil(boss.hp),
+            maxHealth: Math.ceil(boss.maxHealth),
+            shield: Math.ceil(boss.shield),
+            phase: boss.phase,
+            weakPointOpen: boss.weakPointOpen,
+            slowFactor: boss.slowFactor,
+            slowRemaining: boss.slowRemaining,
+            regenPerSecond: boss.regenPerSecond,
+            distanceFromCore: Math.round(Math.hypot(boss.x, boss.y)),
+            overloadTier: this.bossOverloadTier,
+            bossFightSeconds: Math.round(this.bossFightElapsed),
+          }
+        : null,
+      economy: {
+        cash: this.economy.getCash().toString(),
+        coins: this.economy.getCoins().toString(),
+        gems: this.economy.getGems().toString(),
+        cores: this.economy.getCores().toString(),
+        coresEarned: this.economy.getCoresEarned().toString(),
+      },
+      upgrades: {
+        run: this.upgrades.getRunLevels(),
+        workshop: this.upgrades.getWorkshopLevels(),
+        workshopRank: this.upgrades.getWorkshopRank(),
+      },
+      abilities: this.abilities.getLoadout(),
+      prestige: {
+        nodes: this.prestige.getNodes(),
+        damageBonusPercent: this.prestige.getDamageBonusPercent(this.economy.getCoresEarned()),
+        tier: this.prestige.getTier(this.economy.getCoresEarned()),
+      },
+      foundry: {
+        unlocked: this.upgrades.isWorkshopMaxed(),
+        purchases: this.save.foundryPurchases,
+        weekPurchases: this.save.foundryWeekPurchases,
+        weeklyCap: FOUNDRY_BALANCE.weeklyCap,
+        nextCost: this.getFoundryCost(),
+      },
+      compact: {
+        wave: wave.wave,
+        dps: this.getDps(),
+        hp: Math.ceil(this.tower.hp),
+        maxHp: Math.ceil(this.tower.maxHp),
+        armor: Math.round(this.tower.stats.armor * 100),
+        boss: boss?.kind ?? null,
+        mutators: wave.mutators,
+        overloadTier: this.bossOverloadTier,
+      },
+    };
+    return JSON.stringify(report, null, 2);
   }
 
   exportSaveData(): SaveData {
@@ -583,6 +676,7 @@ export class GameSession {
     this.orbitals = [];
     this.waveKilled = 0;
     this.runKills = 0;
+    this.runStartedAt = Date.now();
     this.waitingForStart = true;
     this.overdriveRemaining = 0;
     this.abilities.resetCooldowns();
@@ -637,6 +731,7 @@ export class GameSession {
     this.upgrades.resetRun();
     this.daily.recordRun(this.waves.wave, this.runKills, this.getPlayerLabel());
     this.runKills = 0;
+    this.runStartedAt = Date.now();
     this.waitingForStart = true;
     this.bossFightElapsed = 0;
     this.bossOverloadTier = 0;
@@ -860,6 +955,44 @@ export class GameSession {
     useGameStore.getState().pushToast(`${COSMETIC_BY_ID[id].name} EQUIPPED`, 'violet');
   }
 
+  private normalizeFoundryWeek(): void {
+    const current = weekKey();
+    if (this.save.foundryWeek === current) return;
+    this.save.foundryWeek = current;
+    this.save.foundryWeekPurchases = 0;
+  }
+
+  private getFoundryCost(): number {
+    return Math.ceil(
+      FOUNDRY_BALANCE.baseCost *
+        Math.pow(FOUNDRY_BALANCE.costGrowth, this.save.foundryPurchases),
+    );
+  }
+
+  private buyFoundryCore(): void {
+    this.normalizeFoundryWeek();
+    if (!this.upgrades.isWorkshopMaxed()) {
+      useGameStore.getState().pushToast('MAX ALL WORKSHOP NODES FIRST', 'pink');
+      return;
+    }
+    if (this.save.foundryWeekPurchases >= FOUNDRY_BALANCE.weeklyCap) {
+      useGameStore.getState().pushToast('FOUNDRY WEEKLY CAP REACHED', 'pink');
+      return;
+    }
+    const cost = this.getFoundryCost();
+    if (!this.economy.spendCoins(cost)) {
+      useGameStore.getState().pushToast(`NEED ${formatCompact(cost)} COINS`, 'pink');
+      return;
+    }
+    this.economy.earnCores(1);
+    this.save.foundryPurchases += 1;
+    this.save.foundryWeekPurchases += 1;
+    this.tower.applyStats(this.getTowerStats());
+    this.persist();
+    this.publish();
+    useGameStore.getState().pushToast('CORE FORGED · +1 PERMANENT CORE', 'gold');
+  }
+
   private exchangeGems(): void {
     if (!this.economy.canAffordGems(GEM_EXCHANGE.gemCost)) {
       useGameStore.getState().pushToast('NOT ENOUGH GEMS', 'pink');
@@ -1024,6 +1157,10 @@ export class GameSession {
       this.exchangeGems();
       return;
     }
+    if (command.type === 'buyFoundryCore') {
+      this.buyFoundryCore();
+      return;
+    }
     if (command.type === 'buyCosmetic') {
       this.buyCosmetic(command.id);
       return;
@@ -1073,6 +1210,7 @@ export class GameSession {
   };
 
   private publish(): void {
+    this.normalizeFoundryWeek();
     const wave = this.waves.getSnapshot(this.enemies.length);
     const economy = this.economy.snapshot;
     const workshop = this.upgrades.getWorkshopProgress();
@@ -1139,6 +1277,15 @@ export class GameSession {
       bannerOffer: this.bannerOffer,
       cores: formatCompact(cores),
       coresRaw: cores.toString(),
+      foundryUnlocked: this.upgrades.isWorkshopMaxed(),
+      foundryCost: formatCompact(this.getFoundryCost()),
+      foundryCostRaw: String(this.getFoundryCost()),
+      foundryWeekPurchases: this.save.foundryWeekPurchases,
+      foundryWeeklyCap: FOUNDRY_BALANCE.weeklyCap,
+      foundryCanBuy:
+        this.upgrades.isWorkshopMaxed() &&
+        this.save.foundryWeekPurchases < FOUNDRY_BALANCE.weeklyCap &&
+        this.economy.canAffordCoins(this.getFoundryCost()),
       prestigeReward: this.prestige.getReward(wave.wave),
       canPrestige: this.prestige.canPrestige(wave.wave),
       ascensionBonus: this.prestige.getDamageBonusPercent(coresEarned),

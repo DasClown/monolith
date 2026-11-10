@@ -298,6 +298,12 @@ export interface RunSnapshot {
   bannerOffer: BannerView[] | null;
   cores: string;
   coresRaw: string;
+  foundryUnlocked: boolean;
+  foundryCost: string;
+  foundryCostRaw: string;
+  foundryWeekPurchases: number;
+  foundryWeeklyCap: number;
+  foundryCanBuy: boolean;
   prestigeReward: number;
   canPrestige: boolean;
   ascensionBonus: number;

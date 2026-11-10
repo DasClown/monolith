@@ -5,6 +5,7 @@ import { EconomySystem } from '../src/systems/EconomySystem';
 import { DisabledIapAdapter, MonetizationSystem } from '../src/systems/MonetizationSystem';
 import { PrestigeSystem } from '../src/systems/PrestigeSystem';
 import { WaveSystem } from '../src/systems/WaveSystem';
+import { UpgradeSystem } from '../src/systems/UpgradeSystem';
 import { Enemy } from '../src/entities/Enemy';
 import { relativeOrbitalAngle } from '../src/entities/Orbital';
 import type { EnemyKind, EnemySpawnSpec } from '../src/core/types';
@@ -12,6 +13,7 @@ import { todayKey } from '../src/utils/daily';
 import { RNG } from '../src/core/rng';
 import { parseSaveText } from '../src/game/save';
 import { normalizePlayerName } from '../src/utils/profile';
+import { weekKey } from '../src/utils/daily';
 import { COSMETICS, DEFAULT_COSMETIC, isCosmeticId } from '../src/config/cosmetics';
 
 function spec(kind: EnemyKind, patch: Partial<EnemySpawnSpec> = {}): EnemySpawnSpec {
@@ -298,5 +300,21 @@ describe('boss anti-stall', () => {
     normal.applySlow(0.65, 5);
     expect(normal.slowFactor).toBeCloseTo(0.65);
     expect(normal.regenPerSecond).toBe(50);
+  });
+});
+
+
+describe('workshop and weekly state', () => {
+  it('detects a fully maxed workshop', () => {
+    const levels = { startCash: 10, training: 10, hullBlueprints: 10, coinMagnet: 10 };
+    expect(new UpgradeSystem({}, levels).isWorkshopMaxed()).toBe(true);
+    expect(new UpgradeSystem({}, { ...levels, training: 9 }).isWorkshopMaxed()).toBe(false);
+  });
+
+  it('creates stable ISO week keys', () => {
+    expect(weekKey(new Date('2026-11-10T12:00:00Z'))).toMatch(/^2026-W\d{2}$/);
+    expect(weekKey(new Date('2026-11-10T12:00:00Z'))).toBe(
+      weekKey(new Date('2026-11-11T12:00:00Z')),
+    );
   });
 });

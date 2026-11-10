@@ -107,3 +107,9 @@ export const OFFLINE_BALANCE = {
   coinsPerMinutePerBestWave: 0.5,
   maxCoinsPerMinute: 30,
 } as const;
+
+export const FOUNDRY_BALANCE = {
+  baseCost: 10000,
+  costGrowth: 1.25,
+  weeklyCap: 5,
+} as const;

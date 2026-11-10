@@ -211,6 +211,8 @@ All bosses expose weak points, gain phases at 66% and 33% health, and become fas
 - After the first login the Supabase session is persisted and refreshed automatically; the magic link is only needed initially, after sign-out, or after clearing site data.
 - Cloud save, profile name/tag, and entitlement sync.
 - Gems unlock permanent cosmetic chroma palettes for the monolith core, projectiles, and orbital trail. No combat stats are sold.
+- Once every workshop node is maxed, the **Core Foundry** converts surplus coins into permanent cores with rising costs and a weekly cap.
+- The game-over screen can copy a **Run Report** with wave, boss, mutators, stats, upgrade levels, and overload state for balance debugging.
 - `PaddleIapAdapter` opens Paddle Checkout for the €2.99 Supporter Pack only when Supabase and Paddle are configured.
 - A signed Supabase Edge Function webhook grants permanent entitlements server-side.
 - Production without configuration shows `VAULT CLOSED`; it never grants free purchases.

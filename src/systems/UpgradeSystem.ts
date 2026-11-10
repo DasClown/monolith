@@ -314,6 +314,10 @@ export class UpgradeSystem {
     return Math.min(10, 1 + Math.floor(total / 4));
   }
 
+  isWorkshopMaxed(): boolean {
+    return WORKSHOP_UPGRADES.every((def) => this.getWorkshopLevel(def.id) >= def.maxLevel);
+  }
+
   getWorkshopProgress(): { rank: number; total: number; nextAt: number; text: string } {
     const total = WORKSHOP_UPGRADES.reduce((sum, def) => sum + this.getWorkshopLevel(def.id), 0);
     const rank = Math.min(10, 1 + Math.floor(total / 4));

@@ -43,6 +43,7 @@ export function UpgradeDrawer() {
   const snapshot = useGameStore((state) => state.snapshot);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [confirmAscend, setConfirmAscend] = useState(false);
+  const [confirmFoundry, setConfirmFoundry] = useState(false);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: 0, behavior: 'instant' });
@@ -54,6 +55,12 @@ export function UpgradeDrawer() {
     const timeout = window.setTimeout(() => setConfirmAscend(false), 4000);
     return () => window.clearTimeout(timeout);
   }, [confirmAscend]);
+
+  useEffect(() => {
+    if (!confirmFoundry) return undefined;
+    const timeout = window.setTimeout(() => setConfirmFoundry(false), 4000);
+    return () => window.clearTimeout(timeout);
+  }, [confirmFoundry]);
 
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
@@ -465,6 +472,55 @@ export function UpgradeDrawer() {
                 ) : (
                   <span className="ascend-locked">WAVE {PRESTIGE_BALANCE.minWave}</span>
                 )}
+              </div>
+            </div>
+
+            <div className={`foundry-card ${snapshot.foundryUnlocked ? 'is-unlocked' : ''}`}>
+              <div className="foundry-mark">
+                <Icon name="core" size={22} />
+                <span>+1</span>
+              </div>
+              <div className="foundry-copy">
+                <span className="eyebrow">CORE FOUNDRY</span>
+                <strong>
+                  {snapshot.foundryUnlocked
+                    ? 'REFORGE SURPLUS COINS'
+                    : 'MAX WORKSHOP TO UNLOCK'}
+                </strong>
+                <p>
+                  Convert excess workshop coins into permanent cores.
+                  <br />
+                  {snapshot.foundryWeekPurchases}/{snapshot.foundryWeeklyCap} forged this week.
+                </p>
+              </div>
+              <div className="foundry-action">
+                <span className="foundry-cost">
+                  <Icon name="coin" size={14} />
+                  {snapshot.foundryCost}
+                </span>
+                <button
+                  type="button"
+                  className={`foundry-button ${confirmFoundry ? 'is-confirm' : ''}`}
+                  disabled={!snapshot.foundryCanBuy}
+                  onClick={() => {
+                    if (!confirmFoundry) {
+                      setConfirmFoundry(true);
+                      return;
+                    }
+                    setConfirmFoundry(false);
+                    dispatchCommand({ type: 'buyFoundryCore' });
+                  }}
+                >
+                  {!snapshot.foundryUnlocked
+                    ? 'LOCKED'
+                    : snapshot.foundryWeekPurchases >= snapshot.foundryWeeklyCap
+                      ? 'WEEKLY CAP'
+                      : !snapshot.foundryCanBuy
+                        ? 'NEED COINS'
+                        : confirmFoundry
+                          ? 'CONFIRM CORE'
+                          : 'FORGE CORE'}
+                </button>
               </div>
             </div>
 

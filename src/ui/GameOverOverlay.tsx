@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { dispatchCommand } from '../game/commands';
+import { getGameSession } from '../game/session';
 import { toRoman } from '../utils/roman';
 import { Icon } from './components/Icons';
 
@@ -18,6 +19,25 @@ export function GameOverOverlay() {
   }, [snapshot.phase]);
 
   if (snapshot.phase !== 'gameover') return null;
+
+  const copyRunReport = async () => {
+    const report = getGameSession().createRunReport();
+    try {
+      await navigator.clipboard.writeText(report);
+      useGameStore.getState().pushToast('RUN REPORT COPIED', 'cyan');
+    } catch {
+      const blob = new Blob([report], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `monolith-run-report-${snapshot.playerTag}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      useGameStore.getState().pushToast('RUN REPORT DOWNLOADED', 'cyan');
+    }
+  };
 
   return (
     <div className="gameover-overlay">
@@ -66,9 +86,20 @@ export function GameOverOverlay() {
             WORKSHOP
             <Icon name="arrow-right" size={17} />
           </button>
+          <button
+            type="button"
+            className="action-button action-button--ghost"
+            onClick={() => void copyRunReport()}
+          >
+            <Icon name="sparkle" size={16} />
+            COPY RUN REPORT
+          </button>
         </div>
 
-        <span className="gameover-hint">Permanent workshop buffs carry into the next run.</span>
+        <span className="gameover-hint">
+          Permanent workshop buffs carry into the next run. Balance issue? Copy the run report and
+          send it with your save export.
+        </span>
       </div>
     </div>
   );

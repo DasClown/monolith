@@ -1,6 +1,6 @@
 import type { AbilityId, DailyState, Entitlements } from '../core/types';
 import { DEFAULT_COSMETIC, isCosmeticId, type CosmeticId } from '../config/cosmetics';
-import { emptyDailyState, todayKey } from '../utils/daily';
+import { emptyDailyState, todayKey, weekKey } from '../utils/daily';
 import { createPlayerTag, DEFAULT_PLAYER_NAME, normalizePlayerName, normalizePlayerTag } from '../utils/profile';
 
 export interface CosmeticSave {
@@ -26,6 +26,9 @@ export interface SaveData {
   bestWave: number;
   runs: number;
   cosmetics: CosmeticSave;
+  foundryPurchases: number;
+  foundryWeek: string;
+  foundryWeekPurchases: number;
 }
 
 const STORAGE_KEY = 'monolith-defense.save.v2';
@@ -50,6 +53,9 @@ export function defaultSave(): SaveData {
     bestWave: 0,
     runs: 0,
     cosmetics: { owned: [DEFAULT_COSMETIC], equipped: DEFAULT_COSMETIC },
+    foundryPurchases: 0,
+    foundryWeek: weekKey(),
+    foundryWeekPurchases: 0,
   };
 }
 
@@ -134,6 +140,13 @@ export function loadSave(): SaveData {
           bestWave: typeof parsed.bestWave === 'number' ? parsed.bestWave : 0,
           runs: typeof parsed.runs === 'number' ? parsed.runs : 0,
           cosmetics: normalizeCosmetics(parsed.cosmetics),
+          foundryPurchases:
+            typeof parsed.foundryPurchases === 'number' ? Math.max(0, parsed.foundryPurchases) : 0,
+          foundryWeek: weekKey(),
+          foundryWeekPurchases:
+            parsed.foundryWeek === weekKey() && typeof parsed.foundryWeekPurchases === 'number'
+              ? Math.max(0, parsed.foundryWeekPurchases)
+              : 0,
         };
       }
     }
@@ -177,6 +190,9 @@ export function loadSave(): SaveData {
           bestWave: typeof legacy.bestWave === 'number' ? legacy.bestWave : 0,
           runs: typeof legacy.runs === 'number' ? legacy.runs : 0,
           cosmetics: { owned: [DEFAULT_COSMETIC], equipped: DEFAULT_COSMETIC },
+          foundryPurchases: 0,
+          foundryWeek: weekKey(),
+          foundryWeekPurchases: 0,
         };
       }
     }
@@ -233,6 +249,13 @@ export function parseSaveText(text: string): SaveData | null {
       bestWave: typeof parsed.bestWave === 'number' ? parsed.bestWave : 0,
       runs: typeof parsed.runs === 'number' ? parsed.runs : 0,
       cosmetics: normalizeCosmetics(parsed.cosmetics),
+      foundryPurchases:
+        typeof parsed.foundryPurchases === 'number' ? Math.max(0, parsed.foundryPurchases) : 0,
+      foundryWeek: weekKey(),
+      foundryWeekPurchases:
+        parsed.foundryWeek === weekKey() && typeof parsed.foundryWeekPurchases === 'number'
+          ? Math.max(0, parsed.foundryWeekPurchases)
+          : 0,
     };
   } catch {
     return null;

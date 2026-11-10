@@ -14,6 +14,7 @@ export type GameCommand =
   | { type: 'useAbility'; id: AbilityId }
   | { type: 'equipAbility'; slot: number; id: AbilityId }
   | { type: 'buyPrestigeNode'; id: string }
+  | { type: 'buyFoundryCore' }
   | { type: 'claimContract'; id: string }
   | { type: 'setPlayerName'; name: string }
   | { type: 'useNova' }

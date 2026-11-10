@@ -1271,6 +1271,7 @@ p {
 
 .gameover-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 9px;
 }
@@ -5521,11 +5522,12 @@ p {
 .panel--fusion .damage-type-line { order: 4; }
 .panel--fusion .synergy-grid { order: 5; margin-bottom: 0; }
 
-/* Workshop: rank stays visible, purchases come next, then tree, then ascend. */
+/* Workshop: rank, purchases, ascension, foundry, then the skill tree. */
 .panel--workshop .rank-card { order: 2; }
 .panel--workshop .upgrade-grid { order: 3; }
-.panel--workshop .prestige-tree { order: 4; margin-top: 10px; }
-.panel--workshop .ascension-card { order: 5; margin-top: 10px; margin-bottom: 0; }
+.panel--workshop .ascension-card { order: 4; margin-top: 10px; margin-bottom: 0; }
+.panel--workshop .foundry-card { order: 5; margin-top: 10px; }
+.panel--workshop .prestige-tree { order: 6; margin-top: 10px; }
 
 @media (min-width: 1180px) {
   .fusion-summary {
@@ -6158,5 +6160,139 @@ p {
 
   .chroma-copy {
     min-height: 38px;
+  }
+}
+
+.foundry-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 2px solid rgba(255, 200, 61, 0.22);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 50%, rgba(255, 200, 61, 0.13), transparent 34%),
+    linear-gradient(120deg, #201b13, #12131d 62%);
+  box-shadow:
+    0 3px 0 rgba(5, 6, 10, 0.55),
+    inset 0 1px 0 rgba(255, 247, 220, 0.06);
+}
+
+.foundry-card.is-unlocked {
+  border-color: rgba(255, 200, 61, 0.48);
+}
+
+.foundry-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(255, 200, 61, 0.42);
+  border-radius: 12px;
+  background: rgba(255, 200, 61, 0.08);
+  color: var(--gold);
+}
+
+.foundry-mark span {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  padding: 1px 5px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 8px;
+}
+
+.foundry-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.foundry-copy strong {
+  display: block;
+  margin-top: 1px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.foundry-copy p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.foundry-action {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+}
+
+.foundry-cost {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: 0.03em;
+}
+
+.foundry-button {
+  min-height: 32px;
+  padding: 0 9px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffe577, #ffc83d);
+  box-shadow:
+    0 3px 0 var(--gold-deep),
+    inset 0 1px 0 rgba(255, 247, 220, 0.65);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.foundry-button.is-confirm {
+  background: linear-gradient(180deg, #fff0a8, #ff9b3d);
+}
+
+.foundry-button:disabled {
+  cursor: not-allowed;
+  filter: saturate(0.35) brightness(0.72);
+}
+
+@media (max-width: 520px) {
+  .foundry-card {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .foundry-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .foundry-action {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .foundry-button {
+    flex: 1;
   }
 }
