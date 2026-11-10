@@ -5,6 +5,7 @@ import { getGameSession } from '../game/session';
 import { parseSaveText, writeSave } from '../game/save';
 import { normalizePlayerName } from '../utils/profile';
 import { useGameStore } from '../store/gameStore';
+import { BUILD_ID } from '../config/build';
 import { useSettingsStore } from '../store/settingsStore';
 import { CloudAccountPanel } from './CloudAccountPanel';
 import { Icon } from './components/Icons';
@@ -197,6 +198,7 @@ export function DailyOpsPanel() {
           <span className="eyebrow">SYSTEM SETTINGS</span>
           <strong>ARENA DISPLAY</strong>
         </div>
+        <div className="settings-build">BUILD {BUILD_ID}</div>
         <div className="settings-grid">
           <label className="setting-control">
             <span>

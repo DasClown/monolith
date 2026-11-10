@@ -6296,3 +6296,11 @@ p {
     flex: 1;
   }
 }
+
+.settings-build {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}

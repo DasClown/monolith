@@ -1,5 +1,5 @@
 /* MONOLITH offline shell. Runtime-caches same-origin assets after first use. */
-const CACHE = 'monolith-v1';
+const CACHE = 'monolith-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './favicon.svg'];
 
 self.addEventListener('install', (event) => {

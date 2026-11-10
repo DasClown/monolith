@@ -16,6 +16,7 @@ import { Projectile } from '../entities/Projectile';
 import { Tower } from '../entities/Tower';
 import { useGameStore } from '../store/gameStore';
 import { FOUNDRY_BALANCE, TOWER_BALANCE, WAVE_BALANCE } from '../config/balance';
+import { BUILD_ID } from '../config/build';
 import {
   COSMETICS,
   COSMETIC_BY_ID,
@@ -206,6 +207,7 @@ export class GameSession {
     const wave = this.waves.getSnapshot(this.enemies.length);
     const report = {
       schema: 1,
+      build: BUILD_ID,
       generatedAt: new Date().toISOString(),
       player: { name: this.save.playerName, tag: this.save.playerTag },
       run: {
