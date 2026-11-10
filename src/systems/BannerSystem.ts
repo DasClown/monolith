@@ -200,7 +200,7 @@ export class BannerSystem {
       critChance: Math.min(0.85, stats.critChance + mods.crit),
       maxHp: stats.maxHp * (1 + mods.maxHp),
       regen: stats.regen + mods.regen,
-      armor: Math.min(0.8, stats.armor + mods.armor),
+      armor: Math.min(0.85, stats.armor + mods.armor),
       orbDamage: stats.orbDamage * (1 + mods.orbDamage),
       orbSpeed: stats.orbSpeed * (1 + mods.orbSpeed),
       burnDps: stats.burnDps * (1 + mods.damage),

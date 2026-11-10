@@ -41,6 +41,7 @@ export const TOWER_BALANCE = {
     startingCashPerLevel: 35,
     coinPerMagnetLevel: 0.08,
   },
+  bossHitCap: 0.05,
   nova: {
     cooldown: 24,
     damageMultiplier: 16,

@@ -369,12 +369,17 @@ export class GameSession {
       if (enemy.dead) continue;
       const attack = enemy.update(dt, this.tower.radius);
       if (!attack) continue;
-      const impactDamage =
+      const rawImpact =
         attack === 'slam'
           ? enemy.currentDamage * 1.4
           : attack === 'artillery'
             ? enemy.currentDamage * 1.2
             : enemy.currentDamage;
+      // Bosses cannot delete the core in a handful of unavoidable hits.
+      // This also guarantees that Overload has time to resolve a stalemate.
+      const impactDamage = enemy.boss
+        ? Math.min(rawImpact, this.tower.maxHp * TOWER_BALANCE.bossHitCap)
+        : rawImpact;
       if (attack === 'slam') {
         this.visualEvents.push({ type: 'bossSlam', x: enemy.x, y: enemy.y });
       } else if (attack === 'artillery') {
